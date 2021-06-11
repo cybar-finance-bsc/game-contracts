@@ -59,7 +59,6 @@ contract Lottery is ReentrancyGuard {
     currentPot += msg.value;
   }
 
-  // returns a random uint between 0 and the contract balance
   function random() internal view returns(uint256) {
     return uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, address(this).balance))) % address(this).balance;
   }
