@@ -18,7 +18,7 @@ contract ReentrancyGuard {
 }
 
 
-contract Lottery is ReentrancyGuard {
+contract RussianRoulette is ReentrancyGuard {
   uint256 public constant maximalPot = 5 ether;
   uint256 public constant minimalStake = 0.5 ether;
   uint256 private currentPot = 0 ether;
