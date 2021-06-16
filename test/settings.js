@@ -55,7 +55,7 @@ const lotto = {
         request: "requestNumbers"
     },
     buy: {
-        cake: ethers.utils.parseUnits("10000000", 18),
+        cybar: ethers.utils.parseUnits("10000000", 18),
         one: {
             cost: "10000000000000000000"
         },

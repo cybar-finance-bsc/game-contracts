@@ -13,8 +13,8 @@ describe("Lottery contract", function() {
     let lotteryInstance, lotteryContract;
     // Creating the instance and contract info for the lottery NFT contract
     let lotteryNftInstance, lotteryNftContract;
-    // Creating the instance and contract info for the cake token contract
-    let cakeInstance;
+    // Creating the instance and contract info for the cybar token contract
+    let cybarInstance;
     // Creating the instance and contract info for the timer contract
     let timerInstance, timerContract;
     // Creating the instance and contract info for the mock rand gen
@@ -48,11 +48,11 @@ describe("Lottery contract", function() {
 
         // Deploying the instances
         timerInstance = await timerContract.deploy();
-        cakeInstance = await mock_erc20Contract.deploy(
-            lotto.buy.cake,
+        cybarInstance = await mock_erc20Contract.deploy(
+            lotto.buy.cybar,
         );
         linkInstance = await mock_erc20Contract.deploy(
-            lotto.buy.cake,
+            lotto.buy.cybar,
         );
         mock_vrfCoordInstance = await mock_vrfCoordContract.deploy(
             linkInstance.address,
@@ -60,7 +60,7 @@ describe("Lottery contract", function() {
             lotto.chainLink.fee
         );
         lotteryInstance = await lotteryContract.deploy(
-            cakeInstance.address,
+            cybarInstance.address,
             timerInstance.address,
             lotto.setup.sizeOfLottery,
             lotto.setup.maxValidRange,
@@ -86,15 +86,15 @@ describe("Lottery contract", function() {
             lotteryNftInstance.address,
             randGenInstance.address
         );
-        // Making sure the lottery has some cake
-        await cakeInstance.mint(
+        // Making sure the lottery has some cybar
+        await cybarInstance.mint(
             lotteryInstance.address,
             lotto.newLotto.prize
         );
         // Sending link to lottery
         await linkInstance.transfer(
             randGenInstance.address,
-            lotto.buy.cake
+            lotto.buy.cybar
         );
     });
 
@@ -299,7 +299,7 @@ describe("Lottery contract", function() {
                 maxRange: lotto.setup.maxValidRange
             });
             // Approving lotto to spend cost
-            await cakeInstance.connect(owner).approve(
+            await cybarInstance.connect(owner).approve(
                 lotteryInstance.address,
                 price
             );
@@ -332,7 +332,7 @@ describe("Lottery contract", function() {
                 maxRange: lotto.setup.maxValidRange
             });
             // Approving lotto to spend cost
-            await cakeInstance.connect(owner).approve(
+            await cybarInstance.connect(owner).approve(
                 lotteryInstance.address,
                 price
             );
@@ -366,7 +366,7 @@ describe("Lottery contract", function() {
                 maxRange: lotto.setup.maxValidRange
             });
             // Approving lotto to spend cost
-            await cakeInstance.connect(owner).approve(
+            await cybarInstance.connect(owner).approve(
                 lotteryInstance.address,
                 price
             );
@@ -399,7 +399,7 @@ describe("Lottery contract", function() {
                 maxRange: lotto.setup.maxValidRange
             });
             // Approving lotto to spend cost
-            await cakeInstance.connect(owner).approve(
+            await cybarInstance.connect(owner).approve(
                 lotteryInstance.address,
                 price
             );
@@ -415,7 +415,7 @@ describe("Lottery contract", function() {
         /**
          * Tests the batch buying with invalid approve
          */
-        it("Invalid cake transfer", async function() {
+        it("Invalid cybar transfer", async function() {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -452,7 +452,7 @@ describe("Lottery contract", function() {
                 maxRange: lotto.setup.maxValidRange
             });
             // Approving lotto to spend cost
-            await cakeInstance.connect(owner).approve(
+            await cybarInstance.connect(owner).approve(
                 lotteryInstance.address,
                 price
             );
@@ -611,13 +611,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -644,13 +644,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -683,7 +683,7 @@ describe("Lottery contract", function() {
                 lotto.draw.random,
                 randGenInstance.address
             );
-            let buyerCakeBalanceBefore = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -697,15 +697,15 @@ describe("Lottery contract", function() {
                 1,
                 userTicketIds[50].toString()
             );
-            let buyerCakeBalanceAfter = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
             assert.equal(
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceBefore.toString(),
                 0,
-                "Buyer has cake balance before claiming"
+                "Buyer has cybar balance before claiming"
             );
             assert.equal(
-                buyerCakeBalanceAfter.toString(),
+                buyerCybarBalanceAfter.toString(),
                 lotto.newLotto.win.match_all.toString(),
                 "User won incorrect amount"
             );
@@ -720,13 +720,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -761,7 +761,7 @@ describe("Lottery contract", function() {
                 lotto.draw.random,
                 randGenInstance.address
             );
-            let buyerCakeBalanceBefore = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -775,15 +775,15 @@ describe("Lottery contract", function() {
                 1,
                 userTicketIds[50].toString()
             );
-            let buyerCakeBalanceAfter = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
             assert.equal(
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceBefore.toString(),
                 0,
-                "Buyer has cake balance before claiming"
+                "Buyer has cybar balance before claiming"
             );
             assert.equal(
-                buyerCakeBalanceAfter.toString(),
+                buyerCybarBalanceAfter.toString(),
                 lotto.newLotto.win.match_three.toString(),
                 "User won incorrect amount"
             );
@@ -798,13 +798,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -840,7 +840,7 @@ describe("Lottery contract", function() {
                 lotto.draw.random,
                 randGenInstance.address
             );
-            let buyerCakeBalanceBefore = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -854,15 +854,15 @@ describe("Lottery contract", function() {
                 1,
                 userTicketIds[50].toString()
             );
-            let buyerCakeBalanceAfter = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
             assert.equal(
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceBefore.toString(),
                 0,
-                "Buyer has cake balance before claiming"
+                "Buyer has cybar balance before claiming"
             );
             assert.equal(
-                buyerCakeBalanceAfter.toString(),
+                buyerCybarBalanceAfter.toString(),
                 lotto.newLotto.win.match_two.toString(),
                 "User won incorrect amount"
             );
@@ -877,13 +877,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -920,7 +920,7 @@ describe("Lottery contract", function() {
                 lotto.draw.random,
                 randGenInstance.address
             );
-            let buyerCakeBalanceBefore = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -934,15 +934,15 @@ describe("Lottery contract", function() {
                 1,
                 userTicketIds[50].toString()
             );
-            let buyerCakeBalanceAfter = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
             assert.equal(
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceBefore.toString(),
                 0,
-                "Buyer has cake balance before claiming"
+                "Buyer has cybar balance before claiming"
             );
             assert.equal(
-                buyerCakeBalanceAfter.toString(),
+                buyerCybarBalanceAfter.toString(),
                 lotto.newLotto.win.match_one.toString(),
                 "User won incorrect amount"
             );
@@ -957,13 +957,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1001,7 +1001,7 @@ describe("Lottery contract", function() {
                 lotto.draw.random,
                 randGenInstance.address
             );
-            let buyerCakeBalanceBefore = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -1015,15 +1015,15 @@ describe("Lottery contract", function() {
                 1,
                 userTicketIds[50].toString()
             );
-            let buyerCakeBalanceAfter = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
             assert.equal(
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceBefore.toString(),
                 0,
-                "Buyer has cake balance before claiming"
+                "Buyer has cybar balance before claiming"
             );
             assert.equal(
-                buyerCakeBalanceAfter.toString(),
+                buyerCybarBalanceAfter.toString(),
                 0,
                 "User won incorrect amount"
             );
@@ -1187,13 +1187,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1260,13 +1260,13 @@ describe("Lottery contract", function() {
                 2,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1336,13 +1336,13 @@ describe("Lottery contract", function() {
                 1,
                 49
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1363,13 +1363,13 @@ describe("Lottery contract", function() {
                 1,
                 1
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(owner).transfer(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1405,7 +1405,7 @@ describe("Lottery contract", function() {
                 lotto.draw.random,
                 randGenInstance.address
             );
-            let buyerCakeBalanceBefore = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1418,20 +1418,20 @@ describe("Lottery contract", function() {
                 1,
                 userTicketIds
             );
-            let buyerCakeBalanceAfter = await cakeInstance.balanceOf(buyer.address);
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
             assert.equal(
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceBefore.toString(),
                 0,
-                "Buyer has cake balance before claiming"
+                "Buyer has cybar balance before claiming"
             );
             assert.notEqual(
-                buyerCakeBalanceAfter.toString(),
-                buyerCakeBalanceBefore.toString(),
+                buyerCybarBalanceAfter.toString(),
+                buyerCybarBalanceBefore.toString(),
                 "User balance has not changed"
             );
             assert.notEqual(
-                buyerCakeBalanceAfter.toString(),
+                buyerCybarBalanceAfter.toString(),
                 lotto.newLotto.win.match_all.toString(),
                 "User won incorrect amount"
             );
@@ -1658,34 +1658,34 @@ describe("Lottery contract", function() {
             ).to.be.revertedWith(lotto.errors.invalid_bucket_discount);
         });
 
-        it("Withdraw excess cake", async function() {
-            let ownerCakeBalance = await cakeInstance.balanceOf(owner.address);
-            let lotteryCakeBalance = await cakeInstance.balanceOf(lotteryInstance.address);
-            await lotteryInstance.connect(owner).withdrawCake(lotteryCakeBalance);
-            let ownerCakeBalanceAfter = await cakeInstance.balanceOf(owner.address);
-            let lotteryCakeBalanceAfter = await cakeInstance.balanceOf(lotteryInstance.address);
+        it("Withdraw excess cybar", async function() {
+            let ownerCybarBalance = await cybarInstance.balanceOf(owner.address);
+            let lotteryCybarBalance = await cybarInstance.balanceOf(lotteryInstance.address);
+            await lotteryInstance.connect(owner).withdrawCybar(lotteryCybarBalance);
+            let ownerCybarBalanceAfter = await cybarInstance.balanceOf(owner.address);
+            let lotteryCybarBalanceAfter = await cybarInstance.balanceOf(lotteryInstance.address);
             // Tests
             assert.notEqual(
-                ownerCakeBalance.toString(),
-                ownerCakeBalanceAfter.toString(),
-                "Owner cake balance did not change"
+                ownerCybarBalance.toString(),
+                ownerCybarBalanceAfter.toString(),
+                "Owner cybar balance did not change"
             );
             assert.notEqual(
-                lotteryCakeBalance.toString(),
-                lotteryCakeBalanceAfter.toString(),
+                lotteryCybarBalance.toString(),
+                lotteryCybarBalanceAfter.toString(),
                 "Lottery balance did not change"
             );
             assert.equal(
-                lotteryCakeBalanceAfter.toString(),
+                lotteryCybarBalanceAfter.toString(),
                 0,
                 "Lottery has not been drained"
             );
         });
 
-        it("Invalid withdraw excess cake (non owner)", async function() {
-            let lotteryCakeBalance = await cakeInstance.balanceOf(lotteryInstance.address);
+        it("Invalid withdraw excess cybar (non owner)", async function() {
+            let lotteryCybarBalance = await cybarInstance.balanceOf(lotteryInstance.address);
             await expect(
-                lotteryInstance.connect(buyer).withdrawCake(lotteryCakeBalance)
+                lotteryInstance.connect(buyer).withdrawCybar(lotteryCybarBalance)
             ).to.be.revertedWith(lotto.errors.invalid_admin);
         });
     });
@@ -1786,7 +1786,7 @@ describe("Lottery contract", function() {
                 "Invalid distribution"
             );
             assert.equal(
-                lottoInfo.prizePoolInCake.toString(),
+                lottoInfo.prizePoolInCybar.toString(),
                 lotto.newLotto.prize.toString(),
                 "Invalid prize pool"
             );
@@ -1826,13 +1826,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1854,13 +1854,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1922,13 +1922,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1950,13 +1950,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -1978,13 +1978,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2006,13 +2006,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2034,13 +2034,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2062,13 +2062,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2090,13 +2090,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2118,13 +2118,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2146,13 +2146,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
@@ -2174,13 +2174,13 @@ describe("Lottery contract", function() {
                 1,
                 50
             );
-            // Sending the buyer the needed amount of cake
-            await cakeInstance.connect(buyer).mint(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
                 buyer.address,
                 prices[2]
             );
             // Approving lotto to spend cost
-            await cakeInstance.connect(buyer).approve(
+            await cybarInstance.connect(buyer).approve(
                 lotteryInstance.address,
                 prices[2]
             );
