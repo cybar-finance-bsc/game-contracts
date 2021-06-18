@@ -1,8 +1,8 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@chainlink/contracts/src/v0.6/tests/VRFCoordinatorMock.sol": {
-      "lastModificationDate": 1623267812906,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@chainlink/contracts/src/v0.6/tests/VRFCoordinatorMock.sol": {
+      "lastModificationDate": 1623267875060,
       "contentHash": "88954060c412aad4831523a50b3b6653",
       "sourceName": "@chainlink/contracts/src/v0.6/tests/VRFCoordinatorMock.sol",
       "solcConfig": {
@@ -38,8 +38,8 @@
         "VRFCoordinatorMock"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/Mock_VRFCoordinator.sol": {
-      "lastModificationDate": 1623267066254,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/Mock_VRFCoordinator.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "ee58ffbd92bc849a39f163699fe335a0",
       "sourceName": "contracts/Mock_VRFCoordinator.sol",
       "solcConfig": {
@@ -75,8 +75,8 @@
         "Mock_VRFCoordinator"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/RandomNumberGenerator.sol": {
-      "lastModificationDate": 1623267066272,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/RandomNumberGenerator.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "05ce22be5028b21769bc20c29bf7a095",
       "sourceName": "contracts/RandomNumberGenerator.sol",
       "solcConfig": {
@@ -112,8 +112,8 @@
         "RandomNumberGenerator"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@chainlink/contracts/src/v0.6/VRFConsumerBase.sol": {
-      "lastModificationDate": 1623267751205,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@chainlink/contracts/src/v0.6/VRFConsumerBase.sol": {
+      "lastModificationDate": 1623267874387,
       "contentHash": "d0814ffd4b6a10aaed8b311ff73f341a",
       "sourceName": "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol",
       "solcConfig": {
@@ -150,8 +150,8 @@
         "VRFConsumerBase"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol": {
-      "lastModificationDate": 1623267812944,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol": {
+      "lastModificationDate": 1623267875062,
       "contentHash": "5caf46296cfce2e0b96cb3028b626ee5",
       "sourceName": "@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol",
       "solcConfig": {
@@ -184,8 +184,8 @@
         "SafeMathChainlink"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@chainlink/contracts/src/v0.6/interfaces/LinkTokenInterface.sol": {
-      "lastModificationDate": 1623267811915,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@chainlink/contracts/src/v0.6/interfaces/LinkTokenInterface.sol": {
+      "lastModificationDate": 1623267875060,
       "contentHash": "bb291d0e43a81edd96f781b2760d9553",
       "sourceName": "@chainlink/contracts/src/v0.6/interfaces/LinkTokenInterface.sol",
       "solcConfig": {
@@ -218,8 +218,8 @@
         "LinkTokenInterface"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@chainlink/contracts/src/v0.6/VRFRequestIDBase.sol": {
-      "lastModificationDate": 1623267751221,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@chainlink/contracts/src/v0.6/VRFRequestIDBase.sol": {
+      "lastModificationDate": 1623267874387,
       "contentHash": "d06006d32515b595a7b70c88328ffd7e",
       "sourceName": "@chainlink/contracts/src/v0.6/VRFRequestIDBase.sol",
       "solcConfig": {
@@ -252,9 +252,126 @@
         "VRFRequestIDBase"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/Lottery.sol": {
-      "lastModificationDate": 1623267066235,
-      "contentHash": "8f9c4a18df6a273d4d575f01c140538d",
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/RussianRoulette.sol": {
+      "lastModificationDate": 1624045223277,
+      "contentHash": "e2ef155c5f663619f2d002d14f6ab681",
+      "sourceName": "contracts/RussianRoulette.sol",
+      "solcConfig": {
+        "version": "0.6.12",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
+        "@openzeppelin/contracts/utils/Address.sol",
+        "@openzeppelin/contracts/proxy/Initializable.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "./IRandomNumberGenerator.sol",
+        "./IRussianRouletteNFT.sol",
+        "./Testable.sol",
+        "@openzeppelin/contracts/math/SafeMath.sol",
+        "./SafeMath32.sol",
+        "./SafeMath16.sol",
+        "./SafeMath8.sol"
+      ],
+      "versionPragmas": [
+        ">0.6.0"
+      ],
+      "artifacts": [
+        "RussianRoulette"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/IRandomNumberGenerator.sol": {
+      "lastModificationDate": 1623267844002,
+      "contentHash": "d2f902f0f8f2b48675063a9a897b1b84",
+      "sourceName": "contracts/IRandomNumberGenerator.sol",
+      "solcConfig": {
+        "version": "0.6.12",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.12"
+      ],
+      "artifacts": [
+        "IRandomNumberGenerator"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/LotteryUpgradeProxy.sol": {
+      "lastModificationDate": 1623267844003,
+      "contentHash": "9877e4f74d9f2cf7b34faaf7d0873ca1",
+      "sourceName": "contracts/LotteryUpgradeProxy.sol",
+      "solcConfig": {
+        "version": "0.6.12",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol"
+      ],
+      "versionPragmas": [
+        "0.6.12"
+      ],
+      "artifacts": [
+        "LotteryUpgradeProxy"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/Lottery.sol": {
+      "lastModificationDate": 1623869946956,
+      "contentHash": "2e4c650c2db5d09a30607af894bb6d4d",
       "sourceName": "contracts/Lottery.sol",
       "solcConfig": {
         "version": "0.6.12",
@@ -298,78 +415,8 @@
         "Lottery"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/IRandomNumberGenerator.sol": {
-      "lastModificationDate": 1623267066230,
-      "contentHash": "d2f902f0f8f2b48675063a9a897b1b84",
-      "sourceName": "contracts/IRandomNumberGenerator.sol",
-      "solcConfig": {
-        "version": "0.6.12",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "0.6.12"
-      ],
-      "artifacts": [
-        "IRandomNumberGenerator"
-      ]
-    },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/LotteryUpgradeProxy.sol": {
-      "lastModificationDate": 1623267066247,
-      "contentHash": "9877e4f74d9f2cf7b34faaf7d0873ca1",
-      "sourceName": "contracts/LotteryUpgradeProxy.sol",
-      "solcConfig": {
-        "version": "0.6.12",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol"
-      ],
-      "versionPragmas": [
-        "0.6.12"
-      ],
-      "artifacts": [
-        "LotteryUpgradeProxy"
-      ]
-    },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/ILottery.sol": {
-      "lastModificationDate": 1623267066204,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/ILottery.sol": {
+      "lastModificationDate": 1623267844002,
       "contentHash": "b16e566a6e8c0f4c017108ff1844dfae",
       "sourceName": "contracts/ILottery.sol",
       "solcConfig": {
@@ -402,8 +449,8 @@
         "ILottery"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/LotteryNFT.sol": {
-      "lastModificationDate": 1623267066242,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/LotteryNFT.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "b092e0133d3e3cbb798884fef24f3293",
       "sourceName": "contracts/LotteryNFT.sol",
       "solcConfig": {
@@ -445,8 +492,8 @@
         "LotteryNFT"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155.sol": {
-      "lastModificationDate": 1623267749615,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "33407bb7ff4811650cd1c328e646e55d",
       "sourceName": "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
       "solcConfig": {
@@ -487,8 +534,8 @@
         "ERC1155"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
-      "lastModificationDate": 1623267513632,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1623267872450,
       "contentHash": "6748815a5b45c4aeeda56819f41190e0",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
@@ -523,8 +570,8 @@
         "Ownable"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/utils/Counters.sol": {
-      "lastModificationDate": 1623267514061,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/utils/Counters.sol": {
+      "lastModificationDate": 1623267872462,
       "contentHash": "304a56eb1322144704fb39f8c7e6d722",
       "sourceName": "@openzeppelin/contracts/utils/Counters.sol",
       "solcConfig": {
@@ -559,8 +606,8 @@
         "Counters"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/Testable.sol": {
-      "lastModificationDate": 1623267066293,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/Testable.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "ece22f1ea5ed93825f21bd444e120980",
       "sourceName": "contracts/Testable.sol",
       "solcConfig": {
@@ -595,8 +642,8 @@
         "Testable"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/math/SafeMath.sol": {
-      "lastModificationDate": 1623267513723,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/math/SafeMath.sol": {
+      "lastModificationDate": 1623267872447,
       "contentHash": "e03e12206057e809eb76c5f681170c32",
       "sourceName": "@openzeppelin/contracts/math/SafeMath.sol",
       "solcConfig": {
@@ -629,8 +676,8 @@
         "SafeMath"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/SafeMath16.sol": {
-      "lastModificationDate": 1623267066279,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/SafeMath16.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "dd5a21b6f1c2034356e48e88177e0154",
       "sourceName": "contracts/SafeMath16.sol",
       "solcConfig": {
@@ -663,8 +710,8 @@
         "SafeMath16"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/SafeMath8.sol": {
-      "lastModificationDate": 1623267066289,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/SafeMath8.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "d59ef8b81a67d8eb74cee74232198dc5",
       "sourceName": "contracts/SafeMath8.sol",
       "solcConfig": {
@@ -697,8 +744,8 @@
         "SafeMath8"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155.sol": {
-      "lastModificationDate": 1623267749659,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "cb9dc62067a205eeab4f390c72c7fe14",
       "sourceName": "@openzeppelin/contracts/token/ERC1155/IERC1155.sol",
       "solcConfig": {
@@ -733,8 +780,8 @@
         "IERC1155"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155MetadataURI.sol": {
-      "lastModificationDate": 1623267749659,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155MetadataURI.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "9a313e25e2a837a50f7ae87017539457",
       "sourceName": "@openzeppelin/contracts/token/ERC1155/IERC1155MetadataURI.sol",
       "solcConfig": {
@@ -769,8 +816,8 @@
         "IERC1155MetadataURI"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol": {
-      "lastModificationDate": 1623267749663,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "27af002e8fc1118d099c99fc8852bb73",
       "sourceName": "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol",
       "solcConfig": {
@@ -805,8 +852,8 @@
         "IERC1155Receiver"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/utils/Context.sol": {
-      "lastModificationDate": 1623267514029,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1623267872462,
       "contentHash": "2adbd82f6d055a4751566d4671512b03",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -839,8 +886,8 @@
         "Context"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/introspection/ERC165.sol": {
-      "lastModificationDate": 1623267513655,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/introspection/ERC165.sol": {
+      "lastModificationDate": 1623267872448,
       "contentHash": "08f854e2dd3c262845bba38c9b48e4e0",
       "sourceName": "@openzeppelin/contracts/introspection/ERC165.sol",
       "solcConfig": {
@@ -875,8 +922,8 @@
         "ERC165"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/utils/Address.sol": {
-      "lastModificationDate": 1623267513909,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/utils/Address.sol": {
+      "lastModificationDate": 1623267872462,
       "contentHash": "7aa46886ff5abe7515496208a5e2ce5a",
       "sourceName": "@openzeppelin/contracts/utils/Address.sol",
       "solcConfig": {
@@ -909,8 +956,8 @@
         "Address"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/introspection/IERC165.sol": {
-      "lastModificationDate": 1623267513650,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/introspection/IERC165.sol": {
+      "lastModificationDate": 1623267872449,
       "contentHash": "0d62a8380952235f135dae91590f90a3",
       "sourceName": "@openzeppelin/contracts/introspection/IERC165.sol",
       "solcConfig": {
@@ -943,8 +990,8 @@
         "IERC165"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/Timer.sol": {
-      "lastModificationDate": 1623267066302,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/Timer.sol": {
+      "lastModificationDate": 1623267844003,
       "contentHash": "76b66d8653e02de70716cda7446a0d3b",
       "sourceName": "contracts/Timer.sol",
       "solcConfig": {
@@ -977,8 +1024,119 @@
         "Timer"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
-      "lastModificationDate": 1623267749699,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/RussianRouletteNFT.sol": {
+      "lastModificationDate": 1624045495756,
+      "contentHash": "135441e0a289a9a79b9d044f6ddc7006",
+      "sourceName": "contracts/RussianRouletteNFT.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/Counters.sol",
+        "./IRussianRoulette.sol",
+        "./Testable.sol",
+        "@openzeppelin/contracts/math/SafeMath.sol",
+        "./SafeMath16.sol",
+        "./SafeMath8.sol"
+      ],
+      "versionPragmas": [
+        "0.7.3"
+      ],
+      "artifacts": [
+        "RussianRouletteNFT"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/IRussianRoulette.sol": {
+      "lastModificationDate": 1624042132706,
+      "contentHash": "3c62fc97714d79e6410fb232a94f6ea7",
+      "sourceName": "contracts/IRussianRoulette.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "IRussianRoulette"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/SafeMath32.sol": {
+      "lastModificationDate": 1624040898331,
+      "contentHash": "231d881d4777ecf0affad2a72d0b6e04",
+      "sourceName": "contracts/SafeMath32.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "SafeMath32"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "8065b340476f61365c076897199425f1",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
@@ -1015,8 +1173,8 @@
         "ERC20"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
-      "lastModificationDate": 1623267749718,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "e0a41531d159d3a32f84b7a3ecf9fabb",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
@@ -1049,8 +1207,8 @@
         "IERC20"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/token/ERC20/SafeERC20.sol": {
-      "lastModificationDate": 1623267749740,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/token/ERC20/SafeERC20.sol": {
+      "lastModificationDate": 1623267874355,
       "contentHash": "33e22842646d746e5c4124c2fdc051aa",
       "sourceName": "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
       "solcConfig": {
@@ -1087,8 +1245,8 @@
         "SafeERC20"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/proxy/UpgradeableProxy.sol": {
-      "lastModificationDate": 1623267513806,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/proxy/UpgradeableProxy.sol": {
+      "lastModificationDate": 1623267872450,
       "contentHash": "c163cbd51d0173b71c8137b0ddf1e0ba",
       "sourceName": "@openzeppelin/contracts/proxy/UpgradeableProxy.sol",
       "solcConfig": {
@@ -1124,8 +1282,8 @@
         "UpgradeableProxy"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/proxy/Proxy.sol": {
-      "lastModificationDate": 1623267513778,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/proxy/Proxy.sol": {
+      "lastModificationDate": 1623267872450,
       "contentHash": "52841a5095656ecbf7bc86cd6c114699",
       "sourceName": "@openzeppelin/contracts/proxy/Proxy.sol",
       "solcConfig": {
@@ -1158,8 +1316,8 @@
         "Proxy"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol": {
-      "lastModificationDate": 1623267513798,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol": {
+      "lastModificationDate": 1623267872450,
       "contentHash": "572da86d0eb185b41f85df7d2d75378b",
       "sourceName": "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol",
       "solcConfig": {
@@ -1194,8 +1352,42 @@
         "TransparentUpgradeableProxy"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/node_modules/@openzeppelin/contracts/proxy/Initializable.sol": {
-      "lastModificationDate": 1623267513742,
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/ILotteryNFT.sol": {
+      "lastModificationDate": 1623267844002,
+      "contentHash": "171fb0c6b5050e6d9d849f9af45ea7fb",
+      "sourceName": "contracts/ILotteryNFT.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ILotteryNFT"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/node_modules/@openzeppelin/contracts/proxy/Initializable.sol": {
+      "lastModificationDate": 1623267872450,
       "contentHash": "1efacd801320f8f9413700ddbcf00647",
       "sourceName": "@openzeppelin/contracts/proxy/Initializable.sol",
       "solcConfig": {
@@ -1230,9 +1422,9 @@
         "Initializable"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/Mock_erc20.sol": {
-      "lastModificationDate": 1623267066262,
-      "contentHash": "362392cd33ece5df2205ec15329cfc8d",
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/Mock_erc20.sol": {
+      "lastModificationDate": 1623869946957,
+      "contentHash": "657039404e559711544e702f0b494af5",
       "sourceName": "contracts/Mock_erc20.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -1266,10 +1458,10 @@
         "Mock_erc20"
       ]
     },
-    "/d/Projects/NodeJS/cybar/game-contracts/contracts/ILotteryNFT.sol": {
-      "lastModificationDate": 1623267066222,
-      "contentHash": "171fb0c6b5050e6d9d849f9af45ea7fb",
-      "sourceName": "contracts/ILotteryNFT.sol",
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/IRussianRouletteNFT.sol": {
+      "lastModificationDate": 1624045079273,
+      "contentHash": "79280279f70e6d3d90b55b37a3856fa7",
+      "sourceName": "contracts/IRussianRouletteNFT.sol",
       "solcConfig": {
         "version": "0.7.3",
         "settings": {
@@ -1297,7 +1489,42 @@
         ">=0.6.0 <0.8.0"
       ],
       "artifacts": [
-        "ILotteryNFT"
+        "IRussianRouletteNFT"
+      ]
+    },
+    "/Users/einezahl/dev/crypto/cybar-finance/game-contracts/contracts/RussianRoulette_Thomas.sol": {
+      "lastModificationDate": 1623870158058,
+      "contentHash": "a4c9344dc3ca0be64764be66111045d1",
+      "sourceName": "contracts/RussianRoulette_Thomas.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">0.7.0"
+      ],
+      "artifacts": [
+        "ReentrancyGuard",
+        "RussianRoulette"
       ]
     }
   }

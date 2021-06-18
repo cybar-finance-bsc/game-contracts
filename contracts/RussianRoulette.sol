@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 // Allows for intergration with ChainLink VRF
 import "./IRandomNumberGenerator.sol";
-// Interface for Lottery NFT to mint tokens
-import "./ILotteryNFT.sol";
+// Interface for Russian Roulette NFT to mint tokens
+import "./IRussianRouletteNFT.sol";
 // Allows for time manipulation. Set to 0x address on test/mainnet deploy
 import "./Testable.sol";
 // Safe math 
@@ -20,8 +20,7 @@ import "./SafeMath32.sol";
 import "./SafeMath16.sol";
 import "./SafeMath8.sol";
 
-// TODO rename to Lottery when done
-contract Lottery is Ownable, Initializable, Testable {
+contract RussianRoulette is Ownable, Initializable, Testable {
     // Libraries 
     // Safe math
     using SafeMath for uint256;
@@ -34,40 +33,40 @@ contract Lottery is Ownable, Initializable, Testable {
     using Address for address;
 
     // State variables 
-    // Instance of Cybar token (collateral currency for lotto)
+    // Instance of Cybar token (collateral currency for russian roulette)
     IERC20 internal cybar_;
     // Storing of the NFT
-    ILotteryNFT internal nft_;
+    IRussianRouletteNFT internal nft_;
     // Storing of the randomness generator 
     IRandomNumberGenerator internal randomGenerator_;
     // Request ID for random number
     bytes32 internal requestId_;
-    // Counter for lottery IDs 
-    uint256 private lotteryIdCounter_;
+    // Counter for russian roulette IDs 
+    uint256 private russianRouletteIdCounter;
 
     // Max range for numbers (starting at 0)
     uint16 public maxValidRange_;
 
-    // Represents the status of the lottery
+    // Represents the status of the russian roulette game
     enum Status { 
-        NotStarted,     // The lottery has not started yet
-        Open,           // The lottery is open for ticket purchases 
-        Closed,         // The lottery is no longer open for ticket purchases
-        Completed       // The lottery has been closed and the numbers drawn
+        NotStarted,     // The russian roulette has not started yet
+        Open,           // The russian roulette is open for ticket purchases 
+        Closed,         // The russian roulette is no longer open for ticket purchases
+        Completed       // The russian roulette has been closed and the numberdrawn
     }
-    // All the needed info around a lottery
-    struct LottoInfo {
-        uint256 lotteryID;          // ID for lotto
-        Status lotteryStatus;       // Status for lotto
+    // All the needed info around a game of russian roulette
+    struct RussianRouletteInfo {
+        uint256 russianRouletteId;          // ID for russian roulette
+        Status russianRouletteStatus;       // Status for russian roulette
         uint256 prizePoolInCybar;    // The amount of cybar for prize money
         uint256 costPerTicket;      // Cost per ticket in $cybar
-        uint256 startingTimestamp;      // Block timestamp for star of lotto
+        uint256 startingTimestamp;      // Block timestamp for start of russian roulette
         uint256 closingTimestamp;       // Block timestamp for end of entries
-        uint8 winningNumber;     // The winning numbers
+        uint8 winningNumber;     // The winning number
         uint32[] ticketDistribution; // Distribution of tickets over the possible different numbers
     }
     // Lottery ID's to info
-    mapping(uint256 => LottoInfo) internal allLotteries_;
+    mapping(uint256 => RussianRouletteInfo) internal allRussianRoulettes;
 
     //-------------------------------------------------------------------------
     // EVENTS
@@ -76,21 +75,20 @@ contract Lottery is Ownable, Initializable, Testable {
     event NewBatchMint(
         address indexed minter,
         uint256[] ticketIDs,
-        uint16[] numbers,
-        uint256 totalCost,
-        uint256 pricePaid
+        uint8[] numbers,
+        uint256 totalCost
     );
 
-    event RequestNumbers(uint256 lotteryId, bytes32 requestId);
+    event RequestNumber(uint256 russianRouletteId, bytes32 requestId);
 
     event UpdatedMaxRange(
         address admin, 
         uint16 newMaxRange
     );
 
-    event LotteryOpen(uint256 lotteryId, uint256 ticketSupply);
+    event RussianRouletteOpen(uint256 russianRouletteId, uint256 ticketSupply);
 
-    event LotteryClose(uint256 lotteryId, uint256 ticketSupply);
+    event RussianRouletteClose(uint256 russianRouletteId, uint256 ticketSupply);
 
     //-------------------------------------------------------------------------
     // MODIFIERS
@@ -136,7 +134,7 @@ contract Lottery is Ownable, Initializable, Testable {
     }
 
     function initialize(
-        address _lotteryNFT,
+        address _russianRouletteNFT,
         address _IRandomNumberGenerator
     ) 
         external 
@@ -144,11 +142,11 @@ contract Lottery is Ownable, Initializable, Testable {
         onlyOwner() 
     {
         require(
-            _lotteryNFT != address(0) &&
+            _russianRouletteNFT != address(0) &&
             _IRandomNumberGenerator != address(0),
             "Contracts cannot be 0 address"
         );
-        nft_ = ILotteryNFT(_lotteryNFT);
+        nft_ = IRussianRouletteNFT(_russianRouletteNFT);
         randomGenerator_ = IRandomNumberGenerator(_IRandomNumberGenerator);
     }
 
@@ -157,23 +155,23 @@ contract Lottery is Ownable, Initializable, Testable {
     //-------------------------------------------------------------------------
 
     function costToBuyTickets(
-        uint256 _lotteryId,
+        uint256 _russianRouletteId,
         uint256 _numberOfTickets
     ) 
         external 
         view 
         returns(uint256) 
     {
-        uint256 pricePer = allLotteries_[_lotteryId].costPerTicket;
+        uint256 pricePer = allRussianRoulettes[_russianRouletteId].costPerTicket;
         uint256 totalCost = pricePer.mul(_numberOfTickets);
         return totalCost;
     }
 
-    function getBasicLottoInfo(uint256 _lotteryId) external view returns(
-        LottoInfo memory
+    function getBasicRussianRouletteInfo(uint256 _russianRouletteId) external view returns(
+        RussianRouletteInfo memory
     )
     {
-        return allLotteries_[_lotteryId]; 
+        return allRussianRoulettes[_russianRouletteId]; 
     }
 
     function getMaxRange() external view returns(uint16) {
@@ -205,32 +203,32 @@ contract Lottery is Ownable, Initializable, Testable {
     }
 
     function drawWinningNumber(
-        uint256 _lotteryId, 
+        uint256 _russianRouletteId, 
         uint256 _seed
     ) 
         external 
         onlyOwner() 
     {
-        // Checks that the lottery is past the closing block
+        // Checks that the russian roulette is past the closing block
         require(
-            allLotteries_[_lotteryId].closingTimestamp <= getCurrentTime(),
-            "Cannot set winning numbers during lottery"
+            allRussianRoulettes[_russianRouletteId].closingTimestamp <= getCurrentTime(),
+            "Cannot set winning number during russian roulette"
         );
-        // Checks lottery numbers have not already been drawn
+        // Checks russian roulette number have not already been drawn
         require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Open,
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Open,
             "Lottery State incorrect for draw"
         );
-        // Sets lottery status to closed
-        allLotteries_[_lotteryId].lotteryStatus = Status.Closed;
+        // Sets russian roulette status to closed
+        allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status.Closed;
         // Requests a random number from the generator
-        requestId_ = randomGenerator_.getRandomNumber(_lotteryId, _seed);
+        requestId_ = randomGenerator_.getRandomNumber(_russianRouletteId, _seed);
         // Emits that random number has been requested
-        emit RequestNumbers(_lotteryId, requestId_);
+        emit RequestNumber(_russianRouletteId, requestId_);
     }
 
-    function numbersDrawn(
-        uint256 _lotteryId,
+    function numberDrawn(
+        uint256 _russianRouletteId,
         bytes32 _requestId, 
         uint256 _randomNumber
     ) 
@@ -238,15 +236,15 @@ contract Lottery is Ownable, Initializable, Testable {
         onlyRandomGenerator()
     {
         require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Closed,
-            "Draw numbers first"
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Closed,
+            "Draw number first"
         );
         if(requestId_ == _requestId) {
-            allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
-            allLotteries_[_lotteryId].winningNumber = _cast(_randomNumber);
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status.Completed;
+            allRussianRoulettes[_russianRouletteId].winningNumber = _cast(_randomNumber);
         }
 
-        emit LotteryClose(_lotteryId, nft_.getTotalSupply());
+        emit RussianRouletteClose(_russianRouletteId, nft_.getTotalSupply());
     }
 
     /**
@@ -259,7 +257,7 @@ contract Lottery is Ownable, Initializable, Testable {
      *          will be sold for the game of russian roulette. Note that this
      *          timestamp MUST be after the starting block timestamp. 
      */
-    function createNewLotto(
+    function createNewRussianRoulette(
         uint256 _prizePoolInCybar,
         uint256 _costPerTicket,
         uint256 _startingTimestamp,
@@ -267,7 +265,7 @@ contract Lottery is Ownable, Initializable, Testable {
     )
         external
         onlyOwner()
-        returns(uint256 lotteryId)
+        returns(uint256 russianRouletteId)
     {
         require(
             _prizePoolInCybar != 0 && _costPerTicket != 0,
@@ -276,23 +274,23 @@ contract Lottery is Ownable, Initializable, Testable {
         require(
             _startingTimestamp != 0 &&
             _startingTimestamp < _closingTimestamp,
-            "Timestamps for lottery invalid"
+            "Timestamps for russian roulette invalid"
         );
-        // Incrementing lottery ID 
-        lotteryIdCounter_ = lotteryIdCounter_.add(1);
-        lotteryId = lotteryIdCounter_;
+        // Incrementing russian roulette ID 
+        russianRouletteIdCounter = russianRouletteIdCounter.add(1);
+        russianRouletteId = russianRouletteIdCounter;
         uint8 winningNumber;
-        Status lotteryStatus;
+        Status russianRouletteStatus;
         if(_startingTimestamp >= getCurrentTime()) {
-            lotteryStatus = Status.Open;
+            russianRouletteStatus = Status.Open;
         } else {
-            lotteryStatus = Status.NotStarted;
+            russianRouletteStatus = Status.NotStarted;
         }
         uint32[] memory ticketDistribution_ = new uint32[](maxValidRange_);
         // Saving data in struct
-        LottoInfo memory newLottery = LottoInfo(
-            lotteryId,
-            lotteryStatus,
+        RussianRouletteInfo memory newLottery = RussianRouletteInfo(
+            russianRouletteId,
+            russianRouletteStatus,
             _prizePoolInCybar,
             _costPerTicket,
             _startingTimestamp,
@@ -300,11 +298,11 @@ contract Lottery is Ownable, Initializable, Testable {
             winningNumber,
             ticketDistribution_
         );
-        allLotteries_[lotteryId] = newLottery;
+        allRussianRoulettes[russianRouletteId] = newLottery;
 
-        // Emitting important information around new lottery.
-        emit LotteryOpen(
-            lotteryId, 
+        // Emitting important information around new russian roulette.
+        emit RussianRouletteOpen(
+            russianRouletteId, 
             nft_.getTotalSupply()
         );
     }
@@ -319,30 +317,30 @@ contract Lottery is Ownable, Initializable, Testable {
     //-------------------------------------------------------------------------
     // General Access Functions
 
-    function batchBuyLottoTicket(
-        uint256 _lotteryId,
+    function batchBuyRussianRouletteTicket(
+        uint256 _russianRouletteId,
         uint8 _numberOfTickets,
-        uint8[] calldata _chosenNumbersForEachTicket
+        uint8[] calldata chosenNumberForEachTicket
     )
         external
         notContract()
     {
-        // Ensuring the lottery is within a valid time
+        // Ensuring the russian roulette is within a valid time
         require(
-            getCurrentTime() >= allLotteries_[_lotteryId].startingTimestamp,
+            getCurrentTime() >= allRussianRoulettes[_russianRouletteId].startingTimestamp,
             "Invalid time for mint:start"
         );
         require(
-            getCurrentTime() < allLotteries_[_lotteryId].closingTimestamp,
+            getCurrentTime() < allRussianRoulettes[_russianRouletteId].closingTimestamp,
             "Invalid time for mint:end"
         );
-        if(allLotteries_[_lotteryId].lotteryStatus == Status.NotStarted) {
-            if(allLotteries_[_lotteryId].startingTimestamp >= getCurrentTime()) {
-                allLotteries_[_lotteryId].lotteryStatus = Status.Open;
+        if(allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.NotStarted) {
+            if(allRussianRoulettes[_russianRouletteId].startingTimestamp >= getCurrentTime()) {
+                allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status.Open;
             }
         }
         require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Open,
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Open,
             "Lottery not in state for mint"
         );
         require(
@@ -350,7 +348,7 @@ contract Lottery is Ownable, Initializable, Testable {
             "Batch mint too large"
         );
         // Getting the cost and discount for the token purchase
-        uint256 totalCost = this.costToBuyTickets(_lotteryId, _numberOfTickets);
+        uint256 totalCost = this.costToBuyTickets(_russianRouletteId, _numberOfTickets);
         // Transfers the required Cybar to this contract
         cybar_.transferFrom(
             msg.sender, 
@@ -360,34 +358,34 @@ contract Lottery is Ownable, Initializable, Testable {
         // Batch mints the user their tickets
         uint256[] memory ticketIds = nft_.batchMint(
             msg.sender,
-            _lotteryId,
+            _russianRouletteId,
             _numberOfTickets,
-            _chosenNumbersForEachTicket
+            chosenNumberForEachTicket
         );
         for(uint i=0; i<_numberOfTickets; i++){
-            uint8 chosenNumber = _chosenNumbersForEachTicket[i];
-            allLotteries_[_lotteryId].ticketDistribution[chosenNumber] = allLotteries_[_lotteryId].ticketDistribution[chosenNumber].add(1);
+            uint8 chosenNumber = chosenNumberForEachTicket[i];
+            allRussianRoulettes[_russianRouletteId].ticketDistribution[chosenNumber] = allRussianRoulettes[_russianRouletteId].ticketDistribution[chosenNumber].add(1);
         }
         // Emitting event with all information
         emit NewBatchMint(
             msg.sender,
             ticketIds,
-            _chosenNumbersForEachTicket,
+            chosenNumberForEachTicket,
             totalCost
         );
     }
 
 
-    function claimReward(uint256 _lotteryId, uint256 _tokenId) external notContract() {
-        // Checking the lottery is in a valid time for claiming
+    function claimReward(uint256 _russianRouletteId, uint256 _tokenId) external notContract() {
+        // Checking the russian roulette is in a valid time for claiming
         require(
-            allLotteries_[_lotteryId].closingTimestamp <= getCurrentTime(),
+            allRussianRoulettes[_russianRouletteId].closingTimestamp <= getCurrentTime(),
             "Wait till end to claim"
         );
-        // Checks the lottery winning numbers are available 
+        // Checks the russian roulette winning number are available 
         require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Completed,
-            "Winning Numbers not chosen yet"
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Completed,
+            "Winning Number not chosen yet"
         );
         require(
             nft_.getOwnerOfTicket(_tokenId) == msg.sender,
@@ -395,26 +393,26 @@ contract Lottery is Ownable, Initializable, Testable {
         );
         // Sets the claim of the ticket to true (if claimed, will revert)
         require(
-            nft_.claimTicket(_tokenId, _lotteryId),
-            "Numbers for ticket invalid"
+            nft_.claimTicket(_tokenId, _russianRouletteId),
+            "Number for ticket invalid"
         );
         // Boolean whether the winning number was matched
-        uint8 matchingNumber = nft_.getTicketNumbers(_tokenId);
-        bool matching = nft_.getTicketNumbers(_tokenId) == allLotteries_[_lotteryId].winningNumbers;
+        uint8 matchingNumber = nft_.getTicketNumber(_tokenId);
+        bool matching = nft_.getTicketNumber(_tokenId) == allRussianRoulettes[_russianRouletteId].winningNumber;
         // Getting the prize amount for those matching tickets
         uint256 prizeAmount = _prizeForMatching(
             matching,
             matchingNumber,
-            _lotteryId
+            _russianRouletteId
         );
         // Removing the prize amount from the pool
-        allLotteries_[_lotteryId].prizePoolInCybar = allLotteries_[_lotteryId].prizePoolInCybar.sub(prizeAmount);
+        allRussianRoulettes[_russianRouletteId].prizePoolInCybar = allRussianRoulettes[_russianRouletteId].prizePoolInCybar.sub(prizeAmount);
         // Transfering the user their winnings
         cybar_.safeTransfer(address(msg.sender), prizeAmount);
     }
 
     function batchClaimRewards(
-        uint256 _lotteryId, 
+        uint256 _russianRouletteId, 
         uint256[] calldata _tokenIds
     ) 
         external 
@@ -424,15 +422,15 @@ contract Lottery is Ownable, Initializable, Testable {
             _tokenIds.length <= 50,
             "Batch claim too large"
         );
-        // Checking the lottery is in a valid time for claiming
+        // Checking the russian roulette is in a valid time for claiming
         require(
-            allLotteries_[_lotteryId].closingTimestamp <= getCurrentTime(),
+            allRussianRoulettes[_russianRouletteId].closingTimestamp <= getCurrentTime(),
             "Wait till end to claim"
         );
-        // Checks the lottery winning numbers are available 
+        // Checks the russian roulette winning number is available 
         require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Completed,
-            "Winning Numbers not chosen yet"
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Completed,
+            "Winning Number not chosen yet"
         );
         // Creates a storage for all winnings
         uint256 totalPrize = 0;
@@ -451,20 +449,20 @@ contract Lottery is Ownable, Initializable, Testable {
             }
             // Claims the ticket (will only revert if numbers invalid)
             require(
-                nft_.claimTicket(_tokenIds[i], _lotteryId),
-                "Numbers for ticket invalid"
+                nft_.claimTicket(_tokenIds[i], _russianRouletteId),
+                "Number for ticket invalid"
             );
             // Boolean whether the winning number was matched
-            uint8 matchingNumber = nft_.getTicketNumbers(_tokenIds[i]);
-            bool matching = nft_.getTicketNumbers(_tokenIds[i]) == allLotteries_[_lotteryId].winningNumbers;
+            uint8 matchingNumber = nft_.getTicketNumber(_tokenIds[i]);
+            bool matching = nft_.getTicketNumber(_tokenIds[i]) == allRussianRoulettes[_russianRouletteId].winningNumber;
             // Getting the prize amount for those matching tickets
             uint256 prizeAmount = _prizeForMatching(
                                                     matching,
                                                     matchingNumber,
-                                                    _lotteryId
+                                                    _russianRouletteId
                                                     );
             // Removing the prize amount from the pool
-            allLotteries_[_lotteryId].prizePoolInCybar = allLotteries_[_lotteryId].prizePoolInCybar.sub(prizeAmount);
+            allRussianRoulettes[_russianRouletteId].prizePoolInCybar = allRussianRoulettes[_russianRouletteId].prizePoolInCybar.sub(prizeAmount);
             totalPrize = totalPrize.add(prizeAmount);
         }
         // Transferring the user their winnings
@@ -477,23 +475,23 @@ contract Lottery is Ownable, Initializable, Testable {
 
     /**
      * @param   _matching: Boolean representing whether the correct number was chosen
-     * @param   _lotteryId: The ID of the lottery the user is claiming on
+     * @param   _russianRouletteId: The ID of the russian roulette the user is claiming on
      * @return  uint256: The prize amount in cybar the user is entitled to 
      */
     function _prizeForMatching(
         bool _matching,
         uint8 _winningNumber,
-        uint256 _lotteryId
+        uint256 _russianRouletteId
     ) 
         internal  
         view
         returns(uint256) 
     {
         uint256 prize = 0;
-        if(_matching == 0){
+        if(!_matching){
             return 0; 
         }
-        uint256 prizePerTicket = allLotteries_[_lotteryId].prizePoolInCybar.div(allLotteries_[_lotteryId].ticketDistribution[_winningNumber]);
+        uint256 prizePerTicket = allRussianRoulettes[_russianRouletteId].prizePoolInCybar.div(allRussianRoulettes[_russianRouletteId].ticketDistribution[_winningNumber]);
         return prizePerTicket;
     }
 
