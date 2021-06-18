@@ -16,6 +16,7 @@ import "./ILotteryNFT.sol";
 import "./Testable.sol";
 // Safe math 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./SafeMath32.sol";
 import "./SafeMath16.sol";
 import "./SafeMath8.sol";
 
@@ -24,6 +25,7 @@ contract Lottery is Ownable, Initializable, Testable {
     // Libraries 
     // Safe math
     using SafeMath for uint256;
+    using SafeMath32 for uint32;
     using SafeMath16 for uint16;
     using SafeMath8 for uint8;
     // Safe ERC20
@@ -115,7 +117,7 @@ contract Lottery is Ownable, Initializable, Testable {
     constructor(
         address _cybar, 
         address _timer,
-        uint16 _maxValidNumberRange,
+        uint16 _maxValidNumberRange
     ) 
         Testable(_timer)
         public
@@ -163,7 +165,7 @@ contract Lottery is Ownable, Initializable, Testable {
         returns(uint256) 
     {
         uint256 pricePer = allLotteries_[_lotteryId].costPerTicket;
-        totalCost = pricePer.mul(_numberOfTickets);
+        uint256 totalCost = pricePer.mul(_numberOfTickets);
         return totalCost;
     }
 
@@ -241,24 +243,21 @@ contract Lottery is Ownable, Initializable, Testable {
         );
         if(requestId_ == _requestId) {
             allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
-            allLotteries_[_lotteryId].winningNumber = _split(_randomNumber);
+            allLotteries_[_lotteryId].winningNumber = _cast(_randomNumber);
         }
 
         emit LotteryClose(_lotteryId, nft_.getTotalSupply());
     }
 
     /**
-     * @param   _prizeDistribution An array defining the distribution of the 
-     *          prize pool. I.e if a lotto has 5 numbers, the distribution could
-     *          be [5, 10, 15, 20, 30] = 100%. This means if you get one number
-     *          right you get 5% of the pool, 2 matching would be 10% and so on.
      * @param   _prizePoolInCybar The amount of cybar available to win in this 
-     *          lottery.
+     *          game of russian roulette.
+     * @param   _costPerTicket Cost per ticket.
      * @param   _startingTimestamp The block timestamp for the beginning of the 
-     *          lottery. 
+     *          game of russian roulette. 
      * @param   _closingTimestamp The block timestamp after which no more tickets
-     *          will be sold for the lottery. Note that this timestamp MUST
-     *          be after the starting block timestamp. 
+     *          will be sold for the game of russian roulette. Note that this
+     *          timestamp MUST be after the starting block timestamp. 
      */
     function createNewLotto(
         uint256 _prizePoolInCybar,
@@ -282,13 +281,14 @@ contract Lottery is Ownable, Initializable, Testable {
         // Incrementing lottery ID 
         lotteryIdCounter_ = lotteryIdCounter_.add(1);
         lotteryId = lotteryIdCounter_;
-        uint8 winningNumber = new uint8();
+        uint8 winningNumber;
         Status lotteryStatus;
         if(_startingTimestamp >= getCurrentTime()) {
             lotteryStatus = Status.Open;
         } else {
             lotteryStatus = Status.NotStarted;
         }
+        uint32[] memory ticketDistribution_ = new uint32[](maxValidRange_);
         // Saving data in struct
         LottoInfo memory newLottery = LottoInfo(
             lotteryId,
@@ -297,7 +297,8 @@ contract Lottery is Ownable, Initializable, Testable {
             _costPerTicket,
             _startingTimestamp,
             _closingTimestamp,
-            winningNumber
+            winningNumber,
+            ticketDistribution_
         );
         allLotteries_[lotteryId] = newLottery;
 
@@ -349,7 +350,7 @@ contract Lottery is Ownable, Initializable, Testable {
             "Batch mint too large"
         );
         // Getting the cost and discount for the token purchase
-        uint256 totalCost = this.costToBuyTickets(_lotteryId, numberOfTickets);
+        uint256 totalCost = this.costToBuyTickets(_lotteryId, _numberOfTickets);
         // Transfers the required Cybar to this contract
         cybar_.transferFrom(
             msg.sender, 
@@ -361,12 +362,11 @@ contract Lottery is Ownable, Initializable, Testable {
             msg.sender,
             _lotteryId,
             _numberOfTickets,
-            _chosenNumbersForEachTicket,
-            sizeOfLottery_
+            _chosenNumbersForEachTicket
         );
-        for(int i=0; i<_numberOfTickets; i++){
+        for(uint i=0; i<_numberOfTickets; i++){
             uint8 chosenNumber = _chosenNumbersForEachTicket[i];
-            allLotteries_[_lotteryId].ticketDistribution[chosenNumber].add(1);
+            allLotteries_[_lotteryId].ticketDistribution[chosenNumber] = allLotteries_[_lotteryId].ticketDistribution[chosenNumber].add(1);
         }
         // Emitting event with all information
         emit NewBatchMint(
@@ -399,8 +399,8 @@ contract Lottery is Ownable, Initializable, Testable {
             "Numbers for ticket invalid"
         );
         // Boolean whether the winning number was matched
-        uint8 matchingNumber = nft_.getTicketNumbers(_tokenIds[i]);
-        bool matching = nft_.getTicketNumbers(_tokenIds[i]) == allLotteries_[_lotteryId].winningNumbers;
+        uint8 matchingNumber = nft_.getTicketNumbers(_tokenId);
+        bool matching = nft_.getTicketNumbers(_tokenId) == allLotteries_[_lotteryId].winningNumbers;
         // Getting the prize amount for those matching tickets
         uint256 prizeAmount = _prizeForMatching(
             matching,
@@ -415,13 +415,13 @@ contract Lottery is Ownable, Initializable, Testable {
 
     function batchClaimRewards(
         uint256 _lotteryId, 
-        uint256[] calldata _tokeIds
+        uint256[] calldata _tokenIds
     ) 
         external 
         notContract()
     {
         require(
-            _tokeIds.length <= 50,
+            _tokenIds.length <= 50,
             "Batch claim too large"
         );
         // Checking the lottery is in a valid time for claiming
@@ -437,21 +437,21 @@ contract Lottery is Ownable, Initializable, Testable {
         // Creates a storage for all winnings
         uint256 totalPrize = 0;
         // Loops through each submitted token
-        for (uint256 i = 0; i < _tokeIds.length; i++) {
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
             // Checks user is owner (will revert entire call if not)
             require(
-                nft_.getOwnerOfTicket(_tokeIds[i]) == msg.sender,
+                nft_.getOwnerOfTicket(_tokenIds[i]) == msg.sender,
                 "Only the owner can claim"
             );
             // If token has already been claimed, skip token
             if(
-                nft_.getTicketClaimStatus(_tokeIds[i])
+                nft_.getTicketClaimStatus(_tokenIds[i])
             ) {
                 continue;
             }
             // Claims the ticket (will only revert if numbers invalid)
             require(
-                nft_.claimTicket(_tokeIds[i], _lotteryId),
+                nft_.claimTicket(_tokenIds[i], _lotteryId),
                 "Numbers for ticket invalid"
             );
             // Boolean whether the winning number was matched
@@ -505,7 +505,7 @@ contract Lottery is Ownable, Initializable, Testable {
         returns(uint8) 
     {
         // Encodes the random number with its position in loop
-        bytes32 hashOfRandom = keccak256(abi.encodePacked(_randomNumber, i));
+        bytes32 hashOfRandom = keccak256(abi.encodePacked(_randomNumber));
         // Casts random number hash into uint256
         uint256 numberRepresentation = uint256(hashOfRandom);
         // Casting the uint256 to the desired interval
