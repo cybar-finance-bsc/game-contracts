@@ -487,7 +487,6 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         view
         returns(uint256) 
     {
-        uint256 prize = 0;
         if(!_matching){
             return 0; 
         }
