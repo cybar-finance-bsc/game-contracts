@@ -65,7 +65,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         uint8 winningNumber;     // The winning number
         uint32[] ticketDistribution; // Distribution of tickets over the possible different numbers
     }
-    // Lottery ID's to info
+    // Russian Roulette ID's to info
     mapping(uint256 => RussianRouletteInfo) internal allRussianRoulettes;
 
     //-------------------------------------------------------------------------
@@ -126,7 +126,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         );
         require(
             _maxValidNumberRange != 0,
-            "Lottery setup cannot be 0"
+            "Max range cannot be 0"
         );
         cybar_ = IERC20(_cybar);
         maxValidRange_ = _maxValidNumberRange;
@@ -217,7 +217,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         // Checks russian roulette number have not already been drawn
         require(
             allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Open,
-            "Lottery State incorrect for draw"
+            "Russian Roulette State incorrect for draw"
         );
         // Sets russian roulette status to closed
         allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status.Closed;
@@ -288,7 +288,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         }
         uint32[] memory ticketDistribution_ = new uint32[](maxValidRange_);
         // Saving data in struct
-        RussianRouletteInfo memory newLottery = RussianRouletteInfo(
+        RussianRouletteInfo memory newRussianRoulette = RussianRouletteInfo(
             russianRouletteId,
             russianRouletteStatus,
             _prizePoolInCybar,
@@ -298,7 +298,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             winningNumber,
             ticketDistribution_
         );
-        allRussianRoulettes[russianRouletteId] = newLottery;
+        allRussianRoulettes[russianRouletteId] = newRussianRoulette;
 
         // Emitting important information around new russian roulette.
         emit RussianRouletteOpen(
@@ -341,7 +341,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         }
         require(
             allRussianRoulettes[_russianRouletteId].russianRouletteStatus == Status.Open,
-            "Lottery not in state for mint"
+            "Russian Roulette not in state for mint"
         );
         require(
             _numberOfTickets <= 50,
