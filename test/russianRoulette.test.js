@@ -125,6 +125,39 @@ describe("Russian roulette contract", function () {
                 )
             ).to.be.revertedWith(russianRoulette.errors.invalid_admin);
         });
+        /**
+         * Testing that non-admins cannot create a russian roulette game
+         */
+        it("Invalid prize", async function () {
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Checking call reverts with correct error message
+            await expect(
+                russianRouletteInstance.connect(owner).createNewRussianRoulette(
+                    russianRoulette.errorData.prize,
+                    russianRoulette.newRussianRoulette.cost,
+                    timeStamp.toString(),
+                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
+        });
+        it("Invalid cost", async function () {
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Checking call reverts with correct error message
+            await expect(
+                russianRouletteInstance.connect(owner).createNewRussianRoulette(
+                    russianRoulette.newRussianRoulette.prize,
+                    russianRoulette.errorData.cost,
+                    timeStamp.toString(),
+                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
+        });
     });
 });
 
