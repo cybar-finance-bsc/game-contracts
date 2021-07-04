@@ -158,6 +158,21 @@ describe("Russian roulette contract", function () {
                 )
             ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
         });
+        it("Invalid timestamp order", async function () {
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Checking call reverts with correct error message
+            await expect(
+                russianRouletteInstance.connect(owner).createNewRussianRoulette(
+                    russianRoulette.newRussianRoulette.prize,
+                    russianRoulette.newRussianRoulette.cost,
+                    timeStamp.toString(),
+                    timeStamp.minus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_timestamp);
+        });
     });
 });
 
