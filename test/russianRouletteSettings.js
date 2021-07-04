@@ -30,6 +30,9 @@ const russianRoulette = {
     },
     buy: {
         cybar: ethers.utils.parseUnits("10000000", 18),
+        one: {
+            cost: "10000000000000000000"
+        },
     },
     draw: {
         random: ethers.utils.parseUnits("71812290232383789158325313353218754072886144180308695307717334628590412940628", 0)

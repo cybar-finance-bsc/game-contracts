@@ -174,6 +174,37 @@ describe("Russian roulette contract", function () {
             ).to.be.revertedWith(russianRoulette.errors.invalid_timestamp);
         });
     });
+    describe("Buying tickets tests", function () {
+        beforeEach(async () => {
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Creating a new lottery
+            await russianRouletteInstance.connect(owner).createNewRussianRoulette(
+                russianRoulette.newRussianRoulette.prize,
+                russianRoulette.newRussianRoulette.cost,
+                timeStamp.toString(),
+                timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+            );
+        });
+        it("View cost per ticket", async function () {
+            let totalPrice = await russianRouletteInstance.costToBuyTickets(
+                1,
+                10
+            );
+            // Works back from totalPrice to one token cost
+            let check = BigNumber(totalPrice.toString());
+            let noOfTickets = new BigNumber(10);
+            let oneCost = check.div(noOfTickets);
+            // Checks price is correct
+            assert.equal(
+                oneCost.toString(),
+                russianRoulette.newRussianRoulette.cost.toString(),
+                "Cost for batch buy of 10 equals cost times 10"
+            );
+        });
+    });
 });
 
 
