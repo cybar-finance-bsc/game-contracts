@@ -9,7 +9,6 @@ const russianRoulette = {
         maxValidRange: 8
     },
     newRussianRoulette: {
-        distribution: [0, 0, 0, 0, 0, 0],
         prize: ethers.utils.parseUnits("1000", 18),
         cost: ethers.utils.parseUnits("10", 18),
         closeIncrease: 10000,

@@ -7,7 +7,7 @@ const {
     generateRussianRouletteNumbers
 } = require("./russianRouletteSettings.js");
 
-describe("Russian roulette contract", function() {
+describe("Russian roulette contract", function () {
     let mock_erc20Contract;
     // Creating the instance and contract info for the russian roulette contract
     let russianRouletteInstance, russianRouletteContract;
@@ -90,8 +90,8 @@ describe("Russian roulette contract", function() {
         );
     });
 
-    describe("Creating a new russian roulette test", function() {
-        it("Nominal case", async function() {
+    describe("Creating a new russian roulette test", function () {
+        it("Nominal case", async function () {
             let currentTime = await russianRouletteInstance.getCurrentTime();
             let timeStamp = new BigNumber(currentTime.toString());
             await expect(
@@ -102,10 +102,28 @@ describe("Russian roulette contract", function() {
                     timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString(),
                 )
             ).to.emit(russianRouletteInstance, russianRoulette.events.new)
-            .withArgs(
-                1,
-                0
-            );
+                .withArgs(
+                    1,
+                    0
+                );
+        });
+        /**
+         * Testing that non-admins cannot create a russian roulette game
+         */
+        it("Invalid admin", async function () {
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Checking call reverts with correct error message
+            await expect(
+                russianRouletteInstance.connect(buyer).createNewRussianRoulette(
+                    russianRoulette.newRussianRoulette.prize,
+                    russianRoulette.newRussianRoulette.cost,
+                    timeStamp.toString(),
+                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_admin);
         });
     });
 });
