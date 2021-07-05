@@ -201,7 +201,37 @@ describe("Russian roulette contract", function () {
             assert.equal(
                 oneCost.toString(),
                 russianRoulette.newRussianRoulette.cost.toString(),
-                "Cost for batch buy of 10 equals cost times 10"
+                "Incorrect ost for batch buy of 10 equals cost times 10"
+            );
+        });
+        it("Batch buying 10 tickets", async function () {
+            // Getting the price to buy
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                10
+            );
+            // Generating chosen numbers for buy
+            let ticketNumbers = generateRussianRouletteNumbers({
+                numberOfTickets: 10,
+                maxRange: russianRoulette.setup.maxValidRange
+            });
+            // Approving russian roulette to spend cost
+            await cybarInstance.connect(owner).approve(
+                russianRouletteInstance.address,
+                price
+            );
+            // Batch buying tokens
+            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                1,
+                10,
+                ticketNumbers
+            );
+            // Testing results
+            // TODO get user balances
+            assert.equal(
+                price.toString(),
+                russianRoulette.buy.ten.cost,
+                "Incorrect cost for batch buy of 10"
             );
         });
     });

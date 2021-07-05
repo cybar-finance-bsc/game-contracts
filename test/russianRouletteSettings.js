@@ -33,6 +33,9 @@ const russianRoulette = {
         one: {
             cost: "10000000000000000000"
         },
+        ten: {
+            cost: "100000000000000000000"
+        },
     },
     draw: {
         random: ethers.utils.parseUnits("71812290232383789158325313353218754072886144180308695307717334628590412940628", 0)
@@ -79,9 +82,23 @@ const russianRouletteNFT = {
     }
 }
 
+function generateRussianRouletteNumbers({
+    numberOfTickets,
+    maxRange
+}) {
+    var numberOfNumbers = [];
+    let counterForNumbers = 0;
+    for (let i = 0; i < numberOfTickets; i++) {
+        numberOfNumbers[counterForNumbers] = Math.floor(Math.random() * maxRange + 1);
+        counterForNumbers += 1;
+    }
+    return numberOfNumbers;
+}
+
 module.exports = {
     russianRoulette,
     russianRouletteNFT,
-    BigNumber
+    BigNumber,
+    generateRussianRouletteNumbers
 }
 
