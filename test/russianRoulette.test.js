@@ -204,6 +204,23 @@ describe("Russian roulette contract", function () {
                 "Incorrect ost for batch buy of 10 equals cost times 10"
             );
         });
+        it("Checking all possible numbers", async function () {
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                russianRoulette.setup.maxValidRange
+            );
+            let ticketNumbers = [... Array(russianRoulette.setup.maxValidRange).keys()];
+            await cybarInstance.connect(owner).approve(
+                russianRouletteInstance.address,
+                price
+            );
+            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                1,
+                russianRoulette.setup.maxValidRange,
+                ticketNumbers
+            );
+
+        })
         it("Batch buying 10 tickets", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
