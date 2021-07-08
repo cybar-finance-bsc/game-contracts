@@ -204,34 +204,58 @@ describe("Russian roulette contract", function () {
                 "Incorrect ost for batch buy of 10 equals cost times 10"
             );
         });
-        it("Checking all possible numbers", async function () {
+        it("Invalid ticket number zero", async function () {
+            // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
                 1,
-                russianRoulette.setup.maxValidRange
+                4,
             );
-            let ticketNumbers = [... Array(russianRoulette.setup.maxValidRange).keys()];
+            // Generating chosen numbers for buy
+            let ticketNumbers = [0, 1, 0, 5];
+            // Approving russian roulette to spend cost
             await cybarInstance.connect(owner).approve(
                 russianRouletteInstance.address,
                 price
             );
-            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                1,
-                russianRoulette.setup.maxValidRange,
-                ticketNumbers
-            );
-
-        })
-        it("Batch buying 10 tickets", async function () {
+            // Batch buying tokens
+            await expect(
+                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                    1,
+                    4,
+                    ticketNumbers
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_ticket_number_range);
+        });
+        it("Invalid ticket number above 6", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
                 1,
-                10
+                6,
             );
             // Generating chosen numbers for buy
-            let ticketNumbers = generateRussianRouletteNumbers({
-                numberOfTickets: 10,
-                maxRange: russianRoulette.setup.maxValidRange
-            });
+            let ticketNumbers = [7, 8, 10, 20, 50, 1];
+            // Approving russian roulette to spend cost
+            await cybarInstance.connect(owner).approve(
+                russianRouletteInstance.address,
+                price
+            );
+            // Batch buying tokens
+            await expect(
+                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                    1,
+                    6,
+                    ticketNumbers
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_ticket_number_range);
+        });
+        it("Batch buying 6 tickets with different ticket numbers", async function () {
+            // Getting the price to buy
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                6
+            );
+            // Generating chosen numbers for buy
+            let ticketNumbers = [1, 2, 3, 4, 5, 6];
             // Approving russian roulette to spend cost
             await cybarInstance.connect(owner).approve(
                 russianRouletteInstance.address,
@@ -240,31 +264,41 @@ describe("Russian roulette contract", function () {
             // Batch buying tokens
             await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
                 1,
-                10,
+                6,
                 ticketNumbers
             );
-            // Testing results
-            // TODO get user balances
-            assert.equal(
-                price.toString(),
-                russianRoulette.buy.ten.cost,
-                "Incorrect cost for batch buy of 10"
-            );
         });
+        // it("Batch buying 7 tickets", async function () {
+        //     // Getting the price to buy
+        //     let price = await russianRouletteInstance.costToBuyTickets(
+        //         1,
+        //         5
+        //     );
+        //     // // Generating chosen numbers for buy
+        //     // let ticketNumbers = generateRussianRouletteNumbers({
+        //     //     numberOfTickets: 10,
+        //     //     maxRange: russianRoulette.setup.maxValidRange
+        //     // });
+        //     let ticketNumbers = [1, 2, 3, 4, 5];
+        //     // Approving russian roulette to spend cost
+        //     await cybarInstance.connect(owner).approve(
+        //         russianRouletteInstance.address,
+        //         price
+        //     );
+        //     // Batch buying tokens
+        //     await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+        //         1,
+        //         5,
+        //         ticketNumbers
+        //     );
+        //     // Testing results
+        //     // TODO get user balances
+        //     assert.equal(
+        //         price.toString(),
+        //         russianRoulette.buy.ten.cost,
+        //         "Incorrect cost for batch buy of 10"
+        //     );
+        // });
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

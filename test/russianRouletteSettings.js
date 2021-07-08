@@ -73,6 +73,9 @@ const russianRoulette = {
         invalid_size_update_duplicate: "Cannot set to current size", //DONE
         invalid_numbers_range: "Number for ticket invalid", //DONE
         invalid_mint_address: "Only Russian roulette can mint", // DONE
+        invalid_one_number_per_ticket: "Only one number per ticket",
+        invalid_ticket_number_range: "Ticket number out of range", // DONE
+        invalid_ticket_number_negative: "value out-of-bounds",
     }
 };
 
