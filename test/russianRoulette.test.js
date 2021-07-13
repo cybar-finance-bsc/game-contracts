@@ -383,19 +383,18 @@ describe("Russian roulette contract", function () {
          */
         it("Invalid buying time in future", async function () {
             // Getting the price to buy
-            let price = await lotteryInstance.costToBuyTickets(
+            let price = await russianRouletteInstance.costToBuyTickets(
                 1,
                 10
             );
             // Generating chosen numbers for buy
-            let ticketNumbers = generateLottoNumbers({
+            let ticketNumbers = generateRussianRouletteNumbers({
                 numberOfTickets: 10,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
+                maxRange: russianRoulette.setup.maxValidRange
             });
-            // Approving lotto to spend cost
+            // Approving russianRoulette to spend cost
             await cybarInstance.connect(owner).approve(
-                lotteryInstance.address,
+                russianRouletteInstance.address,
                 price
             );
             // Getting the current block timestamp
@@ -403,17 +402,17 @@ describe("Russian roulette contract", function () {
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
             // Getting the timestamp for invalid time for buying
-            let futureTime = timeStamp.plus(lotto.newLotto.closeIncrease);
+            let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
             // Setting the time forward 
             await russianRouletteInstance.setCurrentTime(futureTime.toString());
             // Batch buying tokens
             await expect(
-                lotteryInstance.connect(owner).batchBuyLottoTicket(
+                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
                     1,
                     10,
                     ticketNumbers
                 )
-            ).to.be.revertedWith(lotto.errors.invalid_mint_timestamp);
+            ).to.be.revertedWith(russianRoulette.errors.invalid_mint_timestamp);
         });
     });
 });
