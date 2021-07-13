@@ -287,6 +287,10 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         uint8 _numberOfTickets,
         uint8[] calldata chosenNumberForEachTicket
     ) external notContract() {
+        require(
+            _numberOfTickets == chosenNumberForEachTicket.length,
+            "Only one number per ticket"
+        );
         // Ticket numbers within range
         for (uint256 i = 0; i < _numberOfTickets; i++) {
             require(
@@ -324,10 +328,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             "Russian Roulette not in state for mint"
         );
         require(_numberOfTickets <= 50, "Batch mint too large");
-        require(
-            _numberOfTickets == chosenNumberForEachTicket.length,
-            "Only one number per ticket"
-        );
+
         // Getting the cost and discount for the token purchase
         uint256 totalCost = this.costToBuyTickets(
             _russianRouletteId,
@@ -342,12 +343,12 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             _numberOfTickets,
             chosenNumberForEachTicket
         );
-        for (uint256 i = 0; i < _numberOfTickets - 1; i++) {
+        for (uint256 i = 0; i < _numberOfTickets; i++) {
             uint8 chosenNumber = chosenNumberForEachTicket[i];
             allRussianRoulettes[_russianRouletteId].ticketDistribution[
-                chosenNumber
+                chosenNumber - 1
             ] = allRussianRoulettes[_russianRouletteId].ticketDistribution[
-                chosenNumber
+                chosenNumber - 1
             ];
         }
         // Emitting event with all information

@@ -36,6 +36,9 @@ const russianRoulette = {
         ten: {
             cost: "100000000000000000000"
         },
+        fifty: {
+            cost: "500000000000000000000"
+        },
     },
     draw: {
         random: ethers.utils.parseUnits("71812290232383789158325313353218754072886144180308695307717334628590412940628", 0)
@@ -61,7 +64,7 @@ const russianRoulette = {
         invalid_price_or_cost: "Prize or cost cannot be 0", // DONE
         invalid_timestamp: "Timestamps for russian roulette invalid", //DONE
         invalid_mint_timestamp: "Invalid time for mint",
-        invalid_mint_numbers: "Invalid chosen numbers",
+        invalid_mint_numbers: "Only one number per ticket",
         invalid_mint_approve: "ERC20: transfer amount exceeds allowance",
         invalid_draw_time: "Cannot set winning number during russian roulette", //DONE
         invalid_draw_repeat: "Russian Roulette State incorrect for draw", //DONE

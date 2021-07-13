@@ -201,7 +201,7 @@ describe("Russian roulette contract", function () {
             assert.equal(
                 oneCost.toString(),
                 russianRoulette.newRussianRoulette.cost.toString(),
-                "Incorrect ost for batch buy of 10 equals cost times 10"
+                "Incorrect cost for batch buy of 10 equals cost times 10"
             );
         });
         it("Invalid ticket number zero", async function () {
@@ -268,37 +268,153 @@ describe("Russian roulette contract", function () {
                 ticketNumbers
             );
         });
-        // it("Batch buying 7 tickets", async function () {
-        //     // Getting the price to buy
-        //     let price = await russianRouletteInstance.costToBuyTickets(
-        //         1,
-        //         5
-        //     );
-        //     // // Generating chosen numbers for buy
-        //     // let ticketNumbers = generateRussianRouletteNumbers({
-        //     //     numberOfTickets: 10,
-        //     //     maxRange: russianRoulette.setup.maxValidRange
-        //     // });
-        //     let ticketNumbers = [1, 2, 3, 4, 5];
-        //     // Approving russian roulette to spend cost
-        //     await cybarInstance.connect(owner).approve(
-        //         russianRouletteInstance.address,
-        //         price
-        //     );
-        //     // Batch buying tokens
-        //     await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-        //         1,
-        //         5,
-        //         ticketNumbers
-        //     );
-        //     // Testing results
-        //     // TODO get user balances
-        //     assert.equal(
-        //         price.toString(),
-        //         russianRoulette.buy.ten.cost,
-        //         "Incorrect cost for batch buy of 10"
-        //     );
-        // });
+        it("Batch buying 10 tickets", async function () {
+            // Getting the price to buy
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                10
+            );
+            let ticketNumbers = [1, 2, 3, 4, 5, 6, 1, 2, 3, 4,];
+            // Approving russian roulette to spend cost
+            await cybarInstance.connect(owner).approve(
+                russianRouletteInstance.address,
+                price
+            );
+            // Batch buying tokens
+            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                1,
+                10,
+                ticketNumbers
+            );
+            // Testing results
+            // TODO get user balances
+            assert.equal(
+                price.toString(),
+                russianRoulette.buy.ten.cost,
+                "Incorrect cost for batch buy of 10"
+            );
+        });
+        /**
+         * Tests the batch buying of 50 token
+         */
+        it("Batch buying 50 tickets", async function () {
+            // Getting the price to buy
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                50
+            );
+            // Generating chosen numbers for buy
+            let ticketNumbers = generateRussianRouletteNumbers({
+                numberOfTickets: 50,
+                maxRange: russianRoulette.setup.maxValidRange
+            });
+            // Approving russian roulette to spend cost
+            await cybarInstance.connect(owner).approve(
+                russianRouletteInstance.address,
+                price
+            );
+            // Batch buying tokens
+            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                1,
+                50,
+                ticketNumbers
+            );
+            // Testing results
+            // TODO get user balances
+            assert.equal(
+                price.toString(),
+                russianRoulette.buy.fifty.cost,
+                "Incorrect cost for batch buy of 50"
+            );
+        });
+        /**
+         * Tests the batch buying with more tickets than numbers
+         */
+        it("Batch buying more tickets than numbers", async function () {
+            // Getting the price to buy
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                10
+            );
+            // Generating chosen numbers for buy
+            let ticketNumbers = generateRussianRouletteNumbers({
+                numberOfTickets: 8,
+                maxRange: russianRoulette.setup.maxValidRange
+            });
+            // Approving russian roulette to spend cost
+            await cybarInstance.connect(owner).approve(
+                russianRouletteInstance.address,
+                price
+            );
+            // Batch buying tokens
+            await expect(
+                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                    1,
+                    10,
+                    ticketNumbers
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_mint_numbers);
+        });
+        /**
+         * Tests the batch buying with invalid approve
+         */
+        it("Invalid cybar transfer without approval", async function () {
+            // Getting the price to buy
+            let price = await russianRouletteInstance.costToBuyTickets(
+                1,
+                10
+            );
+            // Generating chosen numbers for buy
+            let ticketNumbers = generateRussianRouletteNumbers({
+                numberOfTickets: 10,
+                maxRange: russianRoulette.setup.maxValidRange
+            });
+            // Batch buying tokens
+            await expect(
+                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+                    1,
+                    10,
+                    ticketNumbers
+                )
+            ).to.be.revertedWith(russianRoulette.errors.invalid_mint_approve);
+        });
+        /**
+         * Tests the batch buying after the valid time period fails
+         */
+        it("Invalid buying time in future", async function () {
+            // Getting the price to buy
+            let price = await lotteryInstance.costToBuyTickets(
+                1,
+                10
+            );
+            // Generating chosen numbers for buy
+            let ticketNumbers = generateLottoNumbers({
+                numberOfTickets: 10,
+                lottoSize: lotto.setup.sizeOfLottery,
+                maxRange: lotto.setup.maxValidRange
+            });
+            // Approving lotto to spend cost
+            await cybarInstance.connect(owner).approve(
+                lotteryInstance.address,
+                price
+            );
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Getting the timestamp for invalid time for buying
+            let futureTime = timeStamp.plus(lotto.newLotto.closeIncrease);
+            // Setting the time forward 
+            await russianRouletteInstance.setCurrentTime(futureTime.toString());
+            // Batch buying tokens
+            await expect(
+                lotteryInstance.connect(owner).batchBuyLottoTicket(
+                    1,
+                    10,
+                    ticketNumbers
+                )
+            ).to.be.revertedWith(lotto.errors.invalid_mint_timestamp);
+        });
     });
 });
 
