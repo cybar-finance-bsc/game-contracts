@@ -1,4 +1,5 @@
 const { expect, assert } = require("chai");
+const { logger } = require("ethers");
 const { network } = require("hardhat");
 const {
     russianRoulette,
@@ -43,7 +44,7 @@ describe("Russian roulette contract", function () {
         // Getting the timer code (abi, bytecode, name)
         timerContract = await ethers.getContractFactory("Timer");
         // Getting the ChainLink contracts code (abi, bytecode, name)
-        randGenContract = await ethers.getContractFactory("RandomNumberGenerator");
+        randGenContract = await ethers.getContractFactory("RandomNumberGeneratorRR");
         mock_vrfCoordContract = await ethers.getContractFactory("Mock_VRFCoordinator");
 
         // Deploying the instances
@@ -294,9 +295,6 @@ describe("Russian roulette contract", function () {
                 "Incorrect cost for batch buy of 10"
             );
         });
-        /**
-         * Tests the batch buying of 50 token
-         */
         it("Batch buying 50 tickets", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
@@ -327,9 +325,6 @@ describe("Russian roulette contract", function () {
                 "Incorrect cost for batch buy of 50"
             );
         });
-        /**
-         * Tests the batch buying with more tickets than numbers
-         */
         it("Batch buying more tickets than numbers", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
@@ -355,9 +350,6 @@ describe("Russian roulette contract", function () {
                 )
             ).to.be.revertedWith(russianRoulette.errors.invalid_mint_numbers);
         });
-        /**
-         * Tests the batch buying with invalid approve
-         */
         it("Invalid cybar transfer without approval", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
@@ -378,9 +370,6 @@ describe("Russian roulette contract", function () {
                 )
             ).to.be.revertedWith(russianRoulette.errors.invalid_mint_approve);
         });
-        /**
-         * Tests the batch buying after the valid time period fails
-         */
         it("Invalid buying time in future", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
@@ -415,5 +404,60 @@ describe("Russian roulette contract", function () {
             ).to.be.revertedWith(russianRoulette.errors.invalid_mint_timestamp);
         });
     });
-});
+    describe("Drawing numbers tests", function () {
+        beforeEach(async () => {
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Creating a new lottery
+            await russianRouletteInstance.connect(owner).createNewRussianRoulette(
+                russianRoulette.newRussianRoulette.prize,
+                russianRoulette.newRussianRoulette.cost,
+                timeStamp.toString(),
+                timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+            );
+        });
+        it("Setting winning number", async function () {
+            let russianRouletteInfoBefore = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
+            // Setting the time so that we can set winning numbers
+            // Getting the current block timestamp
+            let currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            let timeStamp = new BigNumber(currentTime.toString());
+            // Getting the timestamp for invalid time for buying
+            let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
+            // Setting the time forward 
+            await russianRouletteInstance.setCurrentTime(futureTime.toString());
+            // Drawing the numbers
+            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+                1,
+                1234
+            )).wait();
+            // Getting the request ID out of events
+            let requestId = tx.events[0].args.requestId.toString();
+            logger.info(requestId);
+            // Mocking the VRF Coordinator contract for random request fulfilment 
+            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
+                requestId,
+                russianRoulette.draw.random,
+                randGenInstance.address
+            );
+            // Getting info after call
+            let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
 
+            // Testing
+            assert.equal(
+                russianRouletteInfoBefore.winningNumber.toString(),
+                russianRoulette.newRussianRoulette.win.blankWinningNumber,
+                "Winning numbers set before call"
+            );
+            assert.equal(
+                russianRouletteInfoAfter.winningNumber.toString(),
+                russianRoulette.newRussianRoulette.win.afterWinningNumber,
+                "Winning numbers incorrect after"
+            );
+        });
+    });
+
+});

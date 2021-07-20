@@ -15,7 +15,7 @@ const russianRoulette = {
         endIncrease: 20000,
         win: {
             blankWinningNumber: "0",
-            simpleWinningNumber: "1",
+            afterWinningNumber: "2",
             winningNumber: "4",
         }
     },
