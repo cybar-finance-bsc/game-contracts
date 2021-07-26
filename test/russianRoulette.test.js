@@ -91,91 +91,432 @@ describe("Russian roulette contract", function () {
         );
     });
 
-    describe("Creating a new russian roulette test", function () {
-        it("Nominal case", async function () {
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            let timeStamp = new BigNumber(currentTime.toString());
-            await expect(
-                russianRouletteInstance.connect(owner).createNewRussianRoulette(
-                    russianRoulette.newRussianRoulette.prize,
-                    russianRoulette.newRussianRoulette.cost,
-                    timeStamp.toString(),
-                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString(),
-                )
-            ).to.emit(russianRouletteInstance, russianRoulette.events.new)
-                .withArgs(
-                    1,
-                    0
-                );
-        });
-        /**
-         * Testing that non-admins cannot create a russian roulette game
-         */
-        it("Invalid admin", async function () {
-            // Getting the current block timestamp
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Checking call reverts with correct error message
-            await expect(
-                russianRouletteInstance.connect(buyer).createNewRussianRoulette(
-                    russianRoulette.newRussianRoulette.prize,
-                    russianRoulette.newRussianRoulette.cost,
-                    timeStamp.toString(),
-                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_admin);
-        });
-        /**
-         * Testing that non-admins cannot create a russian roulette game
-         */
-        it("Invalid prize", async function () {
-            // Getting the current block timestamp
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Checking call reverts with correct error message
-            await expect(
-                russianRouletteInstance.connect(owner).createNewRussianRoulette(
-                    russianRoulette.errorData.prize,
-                    russianRoulette.newRussianRoulette.cost,
-                    timeStamp.toString(),
-                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
-        });
-        it("Invalid cost", async function () {
-            // Getting the current block timestamp
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Checking call reverts with correct error message
-            await expect(
-                russianRouletteInstance.connect(owner).createNewRussianRoulette(
-                    russianRoulette.newRussianRoulette.prize,
-                    russianRoulette.errorData.cost,
-                    timeStamp.toString(),
-                    timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
-        });
-        it("Invalid timestamp order", async function () {
-            // Getting the current block timestamp
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Checking call reverts with correct error message
-            await expect(
-                russianRouletteInstance.connect(owner).createNewRussianRoulette(
-                    russianRoulette.newRussianRoulette.prize,
-                    russianRoulette.newRussianRoulette.cost,
-                    timeStamp.toString(),
-                    timeStamp.minus(russianRoulette.newRussianRoulette.closeIncrease).toString()
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_timestamp);
-        });
-    });
-    describe("Buying tickets tests", function () {
+    // describe("Creating a new russian roulette test", function () {
+    //     it("Nominal case", async function () {
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).createNewRussianRoulette(
+    //                 russianRoulette.newRussianRoulette.prize,
+    //                 russianRoulette.newRussianRoulette.cost,
+    //                 timeStamp.toString(),
+    //                 timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString(),
+    //             )
+    //         ).to.emit(russianRouletteInstance, russianRoulette.events.new)
+    //             .withArgs(
+    //                 1,
+    //                 0
+    //             );
+    //     });
+    //     /**
+    //      * Testing that non-admins cannot create a russian roulette game
+    //      */
+    //     it("Invalid admin", async function () {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Checking call reverts with correct error message
+    //         await expect(
+    //             russianRouletteInstance.connect(buyer).createNewRussianRoulette(
+    //                 russianRoulette.newRussianRoulette.prize,
+    //                 russianRoulette.newRussianRoulette.cost,
+    //                 timeStamp.toString(),
+    //                 timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_admin);
+    //     });
+    //     /**
+    //      * Testing that non-admins cannot create a russian roulette game
+    //      */
+    //     it("Invalid prize", async function () {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Checking call reverts with correct error message
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).createNewRussianRoulette(
+    //                 russianRoulette.errorData.prize,
+    //                 russianRoulette.newRussianRoulette.cost,
+    //                 timeStamp.toString(),
+    //                 timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
+    //     });
+    //     it("Invalid cost", async function () {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Checking call reverts with correct error message
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).createNewRussianRoulette(
+    //                 russianRoulette.newRussianRoulette.prize,
+    //                 russianRoulette.errorData.cost,
+    //                 timeStamp.toString(),
+    //                 timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_price_or_cost);
+    //     });
+    //     it("Invalid timestamp order", async function () {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Checking call reverts with correct error message
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).createNewRussianRoulette(
+    //                 russianRoulette.newRussianRoulette.prize,
+    //                 russianRoulette.newRussianRoulette.cost,
+    //                 timeStamp.toString(),
+    //                 timeStamp.minus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_timestamp);
+    //     });
+    // });
+    // describe("Buying tickets tests", function () {
+    //     beforeEach(async () => {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Creating a new lottery
+    //         await russianRouletteInstance.connect(owner).createNewRussianRoulette(
+    //             russianRoulette.newRussianRoulette.prize,
+    //             russianRoulette.newRussianRoulette.cost,
+    //             timeStamp.toString(),
+    //             timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+    //         );
+    //     });
+    //     it("View cost per ticket", async function () {
+    //         let totalPrice = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             10
+    //         );
+    //         // Works back from totalPrice to one token cost
+    //         let check = BigNumber(totalPrice.toString());
+    //         let noOfTickets = new BigNumber(10);
+    //         let oneCost = check.div(noOfTickets);
+    //         // Checks price is correct
+    //         assert.equal(
+    //             oneCost.toString(),
+    //             russianRoulette.newRussianRoulette.cost.toString(),
+    //             "Incorrect cost for batch buy of 10 equals cost times 10"
+    //         );
+    //     });
+    //     it("Invalid ticket number zero", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             4,
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = [0, 1, 0, 5];
+    //         // Approving russian roulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Batch buying tokens
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //                 1,
+    //                 4,
+    //                 ticketNumbers
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_ticket_number_range);
+    //     });
+    //     it("Invalid ticket number above 6", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             6,
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = [7, 8, 10, 20, 50, 1];
+    //         // Approving russian roulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Batch buying tokens
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //                 1,
+    //                 6,
+    //                 ticketNumbers
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_ticket_number_range);
+    //     });
+    //     it("Batch buying 6 tickets with different ticket numbers", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             6
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = [1, 2, 3, 4, 5, 6];
+    //         // Approving russian roulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Batch buying tokens
+    //         await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //             1,
+    //             6,
+    //             ticketNumbers
+    //         );
+    //     });
+    //     it("Batch buying 10 tickets", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             10
+    //         );
+    //         let ticketNumbers = [1, 2, 3, 4, 5, 6, 1, 2, 3, 4,];
+    //         // Approving russian roulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Batch buying tokens
+    //         await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //             1,
+    //             10,
+    //             ticketNumbers
+    //         );
+    //         // Testing results
+    //         // TODO get user balances
+    //         assert.equal(
+    //             price.toString(),
+    //             russianRoulette.buy.ten.cost,
+    //             "Incorrect cost for batch buy of 10"
+    //         );
+    //     });
+    //     it("Batch buying 50 tickets", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             50
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = generateRussianRouletteNumbers({
+    //             numberOfTickets: 50,
+    //             maxRange: russianRoulette.setup.maxValidRange
+    //         });
+    //         // Approving russian roulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Batch buying tokens
+    //         await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //             1,
+    //             50,
+    //             ticketNumbers
+    //         );
+    //         // Testing results
+    //         // TODO get user balances
+    //         assert.equal(
+    //             price.toString(),
+    //             russianRoulette.buy.fifty.cost,
+    //             "Incorrect cost for batch buy of 50"
+    //         );
+    //     });
+    //     it("Batch buying more tickets than numbers", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             10
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = generateRussianRouletteNumbers({
+    //             numberOfTickets: 8,
+    //             maxRange: russianRoulette.setup.maxValidRange
+    //         });
+    //         // Approving russian roulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Batch buying tokens
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //                 1,
+    //                 10,
+    //                 ticketNumbers
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_mint_numbers);
+    //     });
+    //     it("Invalid cybar transfer without approval", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             10
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = generateRussianRouletteNumbers({
+    //             numberOfTickets: 10,
+    //             maxRange: russianRoulette.setup.maxValidRange
+    //         });
+    //         // Batch buying tokens
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //                 1,
+    //                 10,
+    //                 ticketNumbers
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_mint_approve);
+    //     });
+    //     it("Invalid buying time in future", async function () {
+    //         // Getting the price to buy
+    //         let price = await russianRouletteInstance.costToBuyTickets(
+    //             1,
+    //             10
+    //         );
+    //         // Generating chosen numbers for buy
+    //         let ticketNumbers = generateRussianRouletteNumbers({
+    //             numberOfTickets: 10,
+    //             maxRange: russianRoulette.setup.maxValidRange
+    //         });
+    //         // Approving russianRoulette to spend cost
+    //         await cybarInstance.connect(owner).approve(
+    //             russianRouletteInstance.address,
+    //             price
+    //         );
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Getting the timestamp for invalid time for buying
+    //         let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
+    //         // Setting the time forward 
+    //         await russianRouletteInstance.setCurrentTime(futureTime.toString());
+    //         // Batch buying tokens
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+    //                 1,
+    //                 10,
+    //                 ticketNumbers
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_mint_timestamp);
+    //     });
+    // });
+    // describe("Drawing numbers tests", function () {
+    //     beforeEach(async () => {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Creating a new lottery
+    //         await russianRouletteInstance.connect(owner).createNewRussianRoulette(
+    //             russianRoulette.newRussianRoulette.prize,
+    //             russianRoulette.newRussianRoulette.cost,
+    //             timeStamp.toString(),
+    //             timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
+    //         );
+    //     });
+    //     it("Setting winning number", async function () {
+    //         let russianRouletteInfoBefore = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
+    //         // Setting the time so that we can set winning numbers
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Getting the timestamp for invalid time for buying
+    //         let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
+    //         // Setting the time forward 
+    //         await russianRouletteInstance.setCurrentTime(futureTime.toString());
+    //         // Drawing the numbers
+    //         let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+    //             1,
+    //             1234
+    //         )).wait();
+    //         // Getting the request ID out of events
+    //         let requestId = tx.events[0].args.requestId.toString();
+    //         // Mocking the VRF Coordinator contract for random request fulfilment 
+    //         await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
+    //             requestId,
+    //             russianRoulette.draw.random,
+    //             randGenInstance.address
+    //         );
+    //         // Getting info after call
+    //         let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
+
+    //         // Testing
+    //         assert.equal(
+    //             russianRouletteInfoBefore.winningNumber.toString(),
+    //             russianRoulette.newRussianRoulette.win.blankWinningNumber,
+    //             "Winning numbers set before call"
+    //         );
+    //         assert.equal(
+    //             russianRouletteInfoAfter.winningNumber.toString(),
+    //             russianRoulette.newRussianRoulette.win.afterWinningNumber,
+    //             "Winning numbers incorrect after"
+    //         );
+    //     });
+    //     /**
+    //      * Testing that a non owner cannot set the winning numbers
+    //      */
+    //     it("Invalid winning numbers (owner)", async function () {
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Getting the timestamp for invalid time for buying
+    //         let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
+    //         // Setting the time forward 
+    //         await russianRouletteInstance.setCurrentTime(futureTime.toString());
+    //         // Drawing the numbers
+    //         await expect(
+    //             russianRouletteInstance.connect(buyer).drawWinningNumber(
+    //                 1,
+    //                 1234
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_admin);
+    //     });
+    //     /**
+    //      * Testing that numbers cannot be updated once chosen
+    //      */
+    //     it("Invalid winning numbers (already chosen)", async function () {
+    //         // Setting the time so that we can set winning numbers
+    //         // Getting the current block timestamp
+    //         let currentTime = await russianRouletteInstance.getCurrentTime();
+    //         // Converting to a BigNumber for manipulation 
+    //         let timeStamp = new BigNumber(currentTime.toString());
+    //         // Getting the timestamp for invalid time for buying
+    //         let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
+    //         // Setting the time forward 
+    //         await russianRouletteInstance.setCurrentTime(futureTime.toString());
+    //         // Drawing the numbers
+    //         await russianRouletteInstance.connect(owner).drawWinningNumber(
+    //             1,
+    //             1234
+    //         );
+    //         // Drawing the numbers again
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).drawWinningNumber(
+    //                 1,
+    //                 1234
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_draw_repeat);
+    //     });
+    //     /**
+    //      * Testing that winning numbers cannot be set while lottery still in 
+    //      * progress
+    //      */
+    //     it("Invalid winning numbers (time)", async function () {
+    //         await expect(
+    //             russianRouletteInstance.connect(owner).drawWinningNumber(
+    //                 1,
+    //                 1234
+    //             )
+    //         ).to.be.revertedWith(russianRoulette.errors.invalid_draw_time);
+    //     });
+    // });
+    describe("Claiming tickets tests", function () {
         beforeEach(async () => {
             // Getting the current block timestamp
             let currentTime = await russianRouletteInstance.getCurrentTime();
@@ -188,276 +529,125 @@ describe("Russian roulette contract", function () {
                 timeStamp.toString(),
                 timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
             );
-        });
-        it("View cost per ticket", async function () {
-            let totalPrice = await russianRouletteInstance.costToBuyTickets(
-                1,
-                10
-            );
-            // Works back from totalPrice to one token cost
-            let check = BigNumber(totalPrice.toString());
-            let noOfTickets = new BigNumber(10);
-            let oneCost = check.div(noOfTickets);
-            // Checks price is correct
-            assert.equal(
-                oneCost.toString(),
-                russianRoulette.newRussianRoulette.cost.toString(),
-                "Incorrect cost for batch buy of 10 equals cost times 10"
-            );
-        });
-        it("Invalid ticket number zero", async function () {
-            // Getting the price to buy
-            let price = await russianRouletteInstance.costToBuyTickets(
-                1,
-                4,
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = [0, 1, 0, 5];
-            // Approving russian roulette to spend cost
-            await cybarInstance.connect(owner).approve(
-                russianRouletteInstance.address,
-                price
-            );
-            // Batch buying tokens
-            await expect(
-                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                    1,
-                    4,
-                    ticketNumbers
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_ticket_number_range);
-        });
-        it("Invalid ticket number above 6", async function () {
-            // Getting the price to buy
-            let price = await russianRouletteInstance.costToBuyTickets(
-                1,
-                6,
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = [7, 8, 10, 20, 50, 1];
-            // Approving russian roulette to spend cost
-            await cybarInstance.connect(owner).approve(
-                russianRouletteInstance.address,
-                price
-            );
-            // Batch buying tokens
-            await expect(
-                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                    1,
-                    6,
-                    ticketNumbers
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_ticket_number_range);
-        });
-        it("Batch buying 6 tickets with different ticket numbers", async function () {
-            // Getting the price to buy
-            let price = await russianRouletteInstance.costToBuyTickets(
-                1,
-                6
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = [1, 2, 3, 4, 5, 6];
-            // Approving russian roulette to spend cost
-            await cybarInstance.connect(owner).approve(
-                russianRouletteInstance.address,
-                price
-            );
-            // Batch buying tokens
-            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                1,
-                6,
-                ticketNumbers
-            );
-        });
-        it("Batch buying 10 tickets", async function () {
+            // Buying tickets
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
                 1,
                 10
             );
-            let ticketNumbers = [1, 2, 3, 4, 5, 6, 1, 2, 3, 4,];
-            // Approving russian roulette to spend cost
-            await cybarInstance.connect(owner).approve(
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(buyer).mint(
+                buyer.address,
+                price
+            );
+            // Approving lotto to spend cost
+            await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
             );
+            // Generating chosen numbers for buy
+            let ticketNumbers = generateRussianRouletteNumbers({
+                numberOfTickets: 10,
+                maxRange: russianRoulette.setup.maxValidRange
+            });
             // Batch buying tokens
-            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+            await russianRouletteInstance.connect(buyer).batchBuyRussianRouletteTicket(
                 1,
                 10,
                 ticketNumbers
             );
-            // Testing results
-            // TODO get user balances
-            assert.equal(
-                price.toString(),
-                russianRoulette.buy.ten.cost,
-                "Incorrect cost for batch buy of 10"
-            );
         });
-        it("Batch buying 50 tickets", async function () {
+        /**
+         * Testing that claiming winning number changes the users balance
+         * correctly. 
+         */
+        it("Claiming winning number", async function () {
             // Getting the price to buy
             let price = await russianRouletteInstance.costToBuyTickets(
                 1,
-                50
+                1
             );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateRussianRouletteNumbers({
-                numberOfTickets: 50,
-                maxRange: russianRoulette.setup.maxValidRange
-            });
-            // Approving russian roulette to spend cost
-            await cybarInstance.connect(owner).approve(
+            logger.info("Price: ", price.toString());
+
+            let buyerCybarBalanceInitial = await cybarInstance.balanceOf(buyer.address);
+            logger.info("Balance before transfer: ", buyerCybarBalanceInitial.toString());
+            // Sending the buyer the needed amount of cybar
+            await cybarInstance.connect(owner).transfer(
+                buyer.address,
+                price
+            );
+            // Approving lotto to spend cost
+            await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
             );
-            // Batch buying tokens
-            await russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
+            let buyerCybarBalanceAfterTransfer = await cybarInstance.balanceOf(buyer.address);
+            logger.info("Balance after transfer: ", buyerCybarBalanceAfterTransfer.toString());
+
+            await russianRouletteInstance.connect(buyer).batchBuyRussianRouletteTicket(
                 1,
-                50,
-                ticketNumbers
-            );
-            // Testing results
-            // TODO get user balances
-            assert.equal(
-                price.toString(),
-                russianRoulette.buy.fifty.cost,
-                "Incorrect cost for batch buy of 50"
-            );
-        });
-        it("Batch buying more tickets than numbers", async function () {
-            // Getting the price to buy
-            let price = await russianRouletteInstance.costToBuyTickets(
                 1,
-                10
+                russianRoulette.newRussianRoulette.win.winningNumber
             );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateRussianRouletteNumbers({
-                numberOfTickets: 8,
-                maxRange: russianRoulette.setup.maxValidRange
-            });
-            // Approving russian roulette to spend cost
-            await cybarInstance.connect(owner).approve(
-                russianRouletteInstance.address,
-                price
-            );
-            // Batch buying tokens
-            await expect(
-                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                    1,
-                    10,
-                    ticketNumbers
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_mint_numbers);
-        });
-        it("Invalid cybar transfer without approval", async function () {
-            // Getting the price to buy
-            let price = await russianRouletteInstance.costToBuyTickets(
-                1,
-                10
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateRussianRouletteNumbers({
-                numberOfTickets: 10,
-                maxRange: russianRoulette.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await expect(
-                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                    1,
-                    10,
-                    ticketNumbers
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_mint_approve);
-        });
-        it("Invalid buying time in future", async function () {
-            // Getting the price to buy
-            let price = await russianRouletteInstance.costToBuyTickets(
-                1,
-                10
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateRussianRouletteNumbers({
-                numberOfTickets: 10,
-                maxRange: russianRoulette.setup.maxValidRange
-            });
-            // Approving russianRoulette to spend cost
-            await cybarInstance.connect(owner).approve(
-                russianRouletteInstance.address,
-                price
-            );
+            let buyerCybarBalanceAfterBatchBuy = await cybarInstance.balanceOf(buyer.address);
+            logger.info("Balance after batch buy: ", buyerCybarBalanceAfterBatchBuy.toString());
+            // Setting current time so that drawing is correct
             // Getting the current block timestamp
             let currentTime = await russianRouletteInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
             // Getting the timestamp for invalid time for buying
             let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
-            // Setting the time forward 
+            // Setting the time forward
             await russianRouletteInstance.setCurrentTime(futureTime.toString());
-            // Batch buying tokens
-            await expect(
-                russianRouletteInstance.connect(owner).batchBuyRussianRouletteTicket(
-                    1,
-                    10,
-                    ticketNumbers
-                )
-            ).to.be.revertedWith(russianRoulette.errors.invalid_mint_timestamp);
-        });
-    });
-    describe("Drawing numbers tests", function () {
-        beforeEach(async () => {
-            // Getting the current block timestamp
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
-            await russianRouletteInstance.connect(owner).createNewRussianRoulette(
-                russianRoulette.newRussianRoulette.prize,
-                russianRoulette.newRussianRoulette.cost,
-                timeStamp.toString(),
-                timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease).toString()
-            );
-        });
-        it("Setting winning number", async function () {
+            // Getting all users bought tickets
+            let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             let russianRouletteInfoBefore = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
-            // Setting the time so that we can set winning numbers
-            // Getting the current block timestamp
-            let currentTime = await russianRouletteInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Getting the timestamp for invalid time for buying
-            let futureTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
-            // Setting the time forward 
-            await russianRouletteInstance.setCurrentTime(futureTime.toString());
+            logger.info("Winning number before:", russianRouletteInfoBefore.winningNumber.toString());
+            logger.info("Ticket distribution before", russianRouletteInfoBefore.ticketDistribution.toString());
             // Drawing the numbers
             let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
             )).wait();
+            let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
+            logger.info("Winning number after", russianRouletteInfoAfter.winningNumber.toString());
+            logger.info("Ticket Distribution after", russianRouletteInfoAfter.ticketDistribution.toString());
             // Getting the request ID out of events
             let requestId = tx.events[0].args.requestId.toString();
-            logger.info(requestId);
             // Mocking the VRF Coordinator contract for random request fulfilment 
             await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
                 requestId,
                 russianRoulette.draw.random,
                 randGenInstance.address
             );
-            // Getting info after call
-            let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
+            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
-            // Testing
+            // Getting the current block timestamp
+            currentTime = await russianRouletteInstance.getCurrentTime();
+            // Converting to a BigNumber for manipulation 
+            timeStamp = new BigNumber(currentTime.toString());
+            let futureEndTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
+            // Setting the time forward 
+            await russianRouletteInstance.setCurrentTime(futureEndTime.toString());
+            logger.info("userTicketIds", userTicketIds.toString());
+            // Claiming winnings 
+            await russianRouletteInstance.connect(buyer).claimReward(
+                1,
+                userTicketIds[10].toString()
+            );
+            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
+            // Tests
             assert.equal(
-                russianRouletteInfoBefore.winningNumber.toString(),
-                russianRoulette.newRussianRoulette.win.blankWinningNumber,
-                "Winning numbers set before call"
+                buyerCybarBalanceBefore.toString(),
+                0,
+                "Buyer has cybar balance before claiming"
             );
             assert.equal(
-                russianRouletteInfoAfter.winningNumber.toString(),
-                russianRoulette.newRussianRoulette.win.afterWinningNumber,
-                "Winning numbers incorrect after"
+                buyerCybarBalanceAfter.toString(),
+                russianRoulette.newRussianRoulette.win.winPrize.toString(),
+                "User won incorrect amount"
             );
         });
     });
-
 });
