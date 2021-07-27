@@ -17,7 +17,8 @@ const russianRoulette = {
             blankWinningNumber: "0",
             afterWinningNumber: "2",
             winningNumber: ["2"],
-            winPrize: ethers.utils.parseUnits("500", 18),
+            loosingNumber: ["3"],
+            winPrize: ethers.utils.parseUnits("1000", 18),
         }
     },
     chainLink: {
@@ -48,7 +49,7 @@ const russianRoulette = {
         prize: ethers.utils.parseUnits("0", 18),
         cost: ethers.utils.parseUnits("0", 18),
         startTime: ethers.utils.parseUnits("0", 18),
-        ticketNumbers: 7,
+        ticketNumber: [7],
     },
     errors: {
         invalid_rng: "Only random generator", // DONE
@@ -70,12 +71,12 @@ const russianRoulette = {
         invalid_draw_time: "Cannot set winning number during russian roulette", //DONE
         invalid_draw_repeat: "Russian Roulette State incorrect for draw", //DONE
         invalid_claim_time: "Wait till end to claim", //DONE
-        invalid_claim_draw: "Winning Numbers not chosen yet", //DONE
+        invalid_claim_draw: "Winning Number not chosen yet", //DONE
         invalid_claim_owner: "Only the owner can claim", //DONE
         invalid_claim_duplicate: "Ticket already claimed", //DONE
         invalid_claim_russian_roulette: "Ticket not for this russian roulette game", //DONE
         invalid_size_update_duplicate: "Cannot set to current size", //DONE
-        invalid_numbers_range: "Number for ticket invalid", //DONE
+        invalid_number_range: "Number for ticket invalid", //DONE
         invalid_mint_address: "Only Russian roulette can mint", // DONE
         invalid_one_number_per_ticket: "Only one number per ticket",
         invalid_ticket_number_range: "Ticket number out of range", // DONE
