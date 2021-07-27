@@ -140,11 +140,10 @@ contract RussianRoulette is Ownable, Initializable, Testable {
     function costToBuyTickets(
         uint256 _russianRouletteId,
         uint256 _numberOfTickets
-    ) external view returns (uint256) {
+    ) external view returns (uint256 totalCost) {
         uint256 pricePer = allRussianRoulettes[_russianRouletteId]
         .costPerTicket;
-        uint256 totalCost = pricePer.mul(_numberOfTickets);
-        return totalCost;
+        totalCost = pricePer.mul(_numberOfTickets);
     }
 
     function getBasicRussianRouletteInfo(uint256 _russianRouletteId)
@@ -386,15 +385,10 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             "Number for ticket invalid"
         );
         // Boolean whether the winning number was matched
-        uint8 matchingNumber = nft_.getTicketNumber(_tokenId);
         bool matching = nft_.getTicketNumber(_tokenId) ==
             allRussianRoulettes[_russianRouletteId].winningNumber;
         // Getting the prize amount for those matching tickets
-        uint256 prizeAmount = _prizeForMatching(
-            matching,
-            matchingNumber,
-            _russianRouletteId
-        );
+        uint256 prizeAmount = _prizeForMatching(matching, _russianRouletteId);
         // Removing the prize amount from the pool
         allRussianRoulettes[_russianRouletteId]
         .prizePoolInCybar = allRussianRoulettes[_russianRouletteId]
@@ -446,7 +440,6 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             // Getting the prize amount for those matching tickets
             uint256 prizeAmount = _prizeForMatching(
                 matching,
-                matchingNumber,
                 _russianRouletteId
             );
             // Removing the prize amount from the pool
@@ -469,22 +462,17 @@ contract RussianRoulette is Ownable, Initializable, Testable {
      * @param   _russianRouletteId: The ID of the russian roulette the user is claiming on
      * @return  uint256: The prize amount in cybar the user is entitled to
      */
-    function _prizeForMatching(
-        bool _matching,
-        uint8 _winningNumber,
-        uint256 _russianRouletteId
-    ) internal view returns (uint256) {
+    function _prizeForMatching(bool _matching, uint256 _russianRouletteId)
+        internal
+        view
+        returns (uint256)
+    {
         if (!_matching) {
             return 0;
         }
-        uint256 prizePerTicket = allRussianRoulettes[_russianRouletteId]
-        .prizePoolInCybar
-        .div(
-            allRussianRoulettes[_russianRouletteId].ticketDistribution[
-                _winningNumber
-            ]
-        );
-        return prizePerTicket;
+        uint256 prizePool = allRussianRoulettes[_russianRouletteId]
+        .prizePoolInCybar;
+        return prizePool;
     }
 
     function _cast(uint256 _randomNumber) internal view returns (uint8) {
