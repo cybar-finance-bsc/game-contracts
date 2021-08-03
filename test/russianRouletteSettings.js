@@ -18,7 +18,7 @@ const russianRoulette = {
             afterWinningNumber: "2",
             winningNumber: ["2"],
             loosingNumber: ["3"],
-            winPrize: ethers.utils.parseUnits("1000", 18),
+            winPrize: ethers.utils.parseUnits("500", 18),
         }
     },
     chainLink: {

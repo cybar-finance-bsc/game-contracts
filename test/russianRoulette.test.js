@@ -545,11 +545,6 @@ describe("Russian roulette contract", function () {
                 russianRouletteInstance.address,
                 price
             );
-            // Generating chosen numbers for buy
-            // let ticketNumbers = generateRussianRouletteNumbers({
-            //     numberOfTickets: 6,
-            //     maxRange: russianRoulette.setup.maxValidRange
-            // });
             let ticketNumbers = [1, 2, 3, 4, 5, 6, 5];
             // Batch buying tokens
             await russianRouletteInstance.connect(buyer).batchBuyRussianRouletteTicket(
