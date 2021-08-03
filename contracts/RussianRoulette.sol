@@ -123,7 +123,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
     function initialize(
         address _russianRouletteNFT,
         address _IRandomNumberGenerator
-    ) external initializer onlyOwner() {
+    ) external initializer onlyOwner {
         require(
             _russianRouletteNFT != address(0) &&
                 _IRandomNumberGenerator != address(0),
@@ -142,7 +142,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         uint256 _numberOfTickets
     ) external view returns (uint256 totalCost) {
         uint256 pricePer = allRussianRoulettes[_russianRouletteId]
-        .costPerTicket;
+            .costPerTicket;
         totalCost = pricePer.mul(_numberOfTickets);
     }
 
@@ -165,7 +165,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
     //-------------------------------------------------------------------------
     // Restricted Access Functions (onlyOwner)
 
-    function updateMaxRange(uint16 _newMaxRange) external onlyOwner() {
+    function updateMaxRange(uint16 _newMaxRange) external onlyOwner {
         require(maxValidRange_ != _newMaxRange, "Cannot set to current size");
         require(maxValidRange_ != 0, "Max range cannot be 0");
         maxValidRange_ = _newMaxRange;
@@ -175,7 +175,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
 
     function drawWinningNumber(uint256 _russianRouletteId, uint256 _seed)
         external
-        onlyOwner()
+        onlyOwner
     {
         // Checks that the russian roulette is past the closing block
         require(
@@ -191,7 +191,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         );
         // Sets russian roulette status to closed
         allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status
-        .Closed;
+            .Closed;
         // Requests a random number from the generator
         requestId_ = randomGenerator_.getRandomNumber(
             _russianRouletteId,
@@ -205,7 +205,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         uint256 _russianRouletteId,
         bytes32 _requestId,
         uint256 _randomNumber
-    ) external onlyRandomGenerator() {
+    ) external onlyRandomGenerator {
         require(
             allRussianRoulettes[_russianRouletteId].russianRouletteStatus ==
                 Status.Closed,
@@ -213,7 +213,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         );
         if (requestId_ == _requestId) {
             allRussianRoulettes[_russianRouletteId]
-            .russianRouletteStatus = Status.Completed;
+                .russianRouletteStatus = Status.Completed;
             allRussianRoulettes[_russianRouletteId].winningNumber = _cast(
                 _randomNumber
             );
@@ -237,7 +237,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         uint256 _costPerTicket,
         uint256 _startingTimestamp,
         uint256 _closingTimestamp
-    ) external onlyOwner() returns (uint256 russianRouletteId) {
+    ) external onlyOwner returns (uint256 russianRouletteId) {
         require(
             _prizePoolInCybar != 0 && _costPerTicket != 0,
             "Prize or cost cannot be 0"
@@ -274,7 +274,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         emit RussianRouletteOpen(russianRouletteId, nft_.getTotalSupply());
     }
 
-    function withdrawCybar(uint256 _amount) external onlyOwner() {
+    function withdrawCybar(uint256 _amount) external onlyOwner {
         cybar_.transfer(msg.sender, _amount);
     }
 
@@ -285,7 +285,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         uint256 _russianRouletteId,
         uint8 _numberOfTickets,
         uint8[] calldata chosenNumberForEachTicket
-    ) external notContract() {
+    ) external notContract {
         require(
             _numberOfTickets == chosenNumberForEachTicket.length,
             "Only one number per ticket"
@@ -318,7 +318,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
                 getCurrentTime()
             ) {
                 allRussianRoulettes[_russianRouletteId]
-                .russianRouletteStatus = Status.Open;
+                    .russianRouletteStatus = Status.Open;
             }
         }
         require(
@@ -345,10 +345,10 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         for (uint256 i = 0; i < _numberOfTickets; i++) {
             uint8 chosenNumber = chosenNumberForEachTicket[i];
             allRussianRoulettes[_russianRouletteId].ticketDistribution[
-                chosenNumber - 1
-            ] = allRussianRoulettes[_russianRouletteId].ticketDistribution[
-                chosenNumber - 1
-            ];
+                    chosenNumber - 1
+                ] = allRussianRoulettes[_russianRouletteId]
+                .ticketDistribution[chosenNumber - 1]
+                .add(1);
         }
         // Emitting event with all information
         emit NewBatchMint(
@@ -361,7 +361,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
 
     function claimReward(uint256 _russianRouletteId, uint256 _tokenId)
         external
-        notContract()
+        notContract
     {
         // Checking the russian roulette is in a valid time for claiming
         require(
@@ -385,15 +385,21 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             "Number for ticket invalid"
         );
         // Boolean whether the winning number was matched
+        uint8 matchingNumber = nft_.getTicketNumber(_tokenId);
+        // Boolean whether the winning number was matched
         bool matching = nft_.getTicketNumber(_tokenId) ==
             allRussianRoulettes[_russianRouletteId].winningNumber;
         // Getting the prize amount for those matching tickets
-        uint256 prizeAmount = _prizeForMatching(matching, _russianRouletteId);
+        uint256 prizeAmount = _prizeForMatching(
+            matching,
+            matchingNumber,
+            _russianRouletteId
+        );
         // Removing the prize amount from the pool
         allRussianRoulettes[_russianRouletteId]
-        .prizePoolInCybar = allRussianRoulettes[_russianRouletteId]
-        .prizePoolInCybar
-        .sub(prizeAmount);
+            .prizePoolInCybar = allRussianRoulettes[_russianRouletteId]
+            .prizePoolInCybar
+            .sub(prizeAmount);
         // Transfering the user their winnings
         cybar_.safeTransfer(address(msg.sender), prizeAmount);
     }
@@ -401,7 +407,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
     function batchClaimRewards(
         uint256 _russianRouletteId,
         uint256[] calldata _tokenIds
-    ) external notContract() {
+    ) external notContract {
         require(_tokenIds.length <= 50, "Batch claim too large");
         // Checking the russian roulette is in a valid time for claiming
         require(
@@ -440,13 +446,14 @@ contract RussianRoulette is Ownable, Initializable, Testable {
             // Getting the prize amount for those matching tickets
             uint256 prizeAmount = _prizeForMatching(
                 matching,
+                matchingNumber,
                 _russianRouletteId
             );
             // Removing the prize amount from the pool
             allRussianRoulettes[_russianRouletteId]
-            .prizePoolInCybar = allRussianRoulettes[_russianRouletteId]
-            .prizePoolInCybar
-            .sub(prizeAmount);
+                .prizePoolInCybar = allRussianRoulettes[_russianRouletteId]
+                .prizePoolInCybar
+                .sub(prizeAmount);
             totalPrize = totalPrize.add(prizeAmount);
         }
         // Transferring the user their winnings
@@ -462,17 +469,22 @@ contract RussianRoulette is Ownable, Initializable, Testable {
      * @param   _russianRouletteId: The ID of the russian roulette the user is claiming on
      * @return  uint256: The prize amount in cybar the user is entitled to
      */
-    function _prizeForMatching(bool _matching, uint256 _russianRouletteId)
-        internal
-        view
-        returns (uint256)
-    {
+    function _prizeForMatching(
+        bool _matching,
+        uint8 _winningNumber,
+        uint256 _russianRouletteId
+    ) internal view returns (uint256) {
         if (!_matching) {
             return 0;
         }
-        uint256 prizePool = allRussianRoulettes[_russianRouletteId]
-        .prizePoolInCybar;
-        return prizePool;
+        uint256 prizePerTicket = allRussianRoulettes[_russianRouletteId]
+            .prizePoolInCybar
+            .div(
+                allRussianRoulettes[_russianRouletteId].ticketDistribution[
+                    _winningNumber - 1
+                ]
+            );
+        return prizePerTicket;
     }
 
     function _cast(uint256 _randomNumber) internal view returns (uint8) {
