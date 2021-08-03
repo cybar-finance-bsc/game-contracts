@@ -364,7 +364,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         );
         for(uint i=0; i<_numberOfTickets; i++){
             uint8 chosenNumber = chosenNumberForEachTicket[i];
-            allRussianRoulettes[_russianRouletteId].ticketDistribution[chosenNumber] = allRussianRoulettes[_russianRouletteId].ticketDistribution[chosenNumber].add(1);
+            allRussianRoulettes[_russianRouletteId].ticketDistribution[chosenNumber-1] = allRussianRoulettes[_russianRouletteId].ticketDistribution[chosenNumber-1].add(1);
         }
         // Emitting event with all information
         emit NewBatchMint(
@@ -490,7 +490,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         if(!_matching){
             return 0; 
         }
-        uint256 prizePerTicket = allRussianRoulettes[_russianRouletteId].prizePoolInCybar.div(allRussianRoulettes[_russianRouletteId].ticketDistribution[_winningNumber]);
+        uint256 prizePerTicket = allRussianRoulettes[_russianRouletteId].prizePoolInCybar.div(allRussianRoulettes[_russianRouletteId].ticketDistribution[_winningNumber-1]);
         return prizePerTicket;
     }
 
