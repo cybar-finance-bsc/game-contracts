@@ -180,7 +180,7 @@ describe("Russian roulette contract", function () {
             let currentTime = await russianRouletteInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
+            // Creating a new roulette
             await russianRouletteInstance.connect(owner).createNewRussianRoulette(
                 russianRoulette.newRussianRoulette.prize,
                 russianRoulette.newRussianRoulette.cost,
@@ -409,7 +409,7 @@ describe("Russian roulette contract", function () {
             let currentTime = await russianRouletteInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
+            // Creating a new roulette
             await russianRouletteInstance.connect(owner).createNewRussianRoulette(
                 russianRoulette.newRussianRoulette.prize,
                 russianRoulette.newRussianRoulette.cost,
@@ -521,7 +521,7 @@ describe("Russian roulette contract", function () {
             let currentTime = await russianRouletteInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
+            // Creating a new roulette
             await russianRouletteInstance.connect(owner).createNewRussianRoulette(
                 russianRoulette.newRussianRoulette.prize,
                 russianRoulette.newRussianRoulette.cost,
@@ -706,7 +706,7 @@ describe("Russian roulette contract", function () {
             );
         });
         /**
-         * Testing that a claim cannot happen while the lottery is still active
+         * Testing that a claim cannot happen while the roulette is still active
          */
         it("Invalid claim (incorrect time)", async function () {
             // Setting current time so that drawing is correct
@@ -933,7 +933,7 @@ describe("Russian roulette contract", function () {
             let currentTime = await russianRouletteInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
+            // Creating a new roulette
             await russianRouletteInstance.connect(owner).createNewRussianRoulette(
                 russianRoulette.newRussianRoulette.prize,
                 russianRoulette.newRussianRoulette.cost,
@@ -1043,7 +1043,7 @@ describe("Russian roulette contract", function () {
     });
     describe("Upgrade functionality tests", function () {
         /**
-         * Tests that an admin can update the size of a lottery
+         * Tests that an admin can update the size of a roulette
          */
         it("Update range of numbers", async function () {
             // Getting the range
@@ -1066,7 +1066,7 @@ describe("Russian roulette contract", function () {
                 "Max range incorrect after update"
             );
         });
-        it("Invalid update size of lottery (same as current)", async function () {
+        it("Invalid update size of roulette (same as current)", async function () {
             // Updating range
             await expect(
                 russianRouletteInstance.connect(owner).updateMaxRange(
@@ -1074,8 +1074,8 @@ describe("Russian roulette contract", function () {
                 )
             ).to.be.revertedWith(russianRoulette.errors.invalid_size_update_duplicate);
         });
-        it("Invalid update size of lottery (non-owner)", async function () {
-            // Updating the size of the lottery
+        it("Invalid update size of roulette (non-owner)", async function () {
+            // Updating the size of the roulette
             await expect(
                 russianRouletteInstance.connect(buyer).updateMaxRange(
                     russianRoulette.setup.maxValidRange
