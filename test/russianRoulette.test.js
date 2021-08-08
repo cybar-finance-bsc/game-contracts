@@ -1,5 +1,4 @@
 const { expect, assert } = require("chai");
-const { logger } = require("ethers");
 const { network } = require("hardhat");
 const {
     russianRoulette,
@@ -504,7 +503,7 @@ describe("Russian roulette contract", function () {
             ).to.be.revertedWith(russianRoulette.errors.invalid_draw_repeat);
         });
         /**
-         * Testing that winning numbers cannot be set while lottery still in 
+         * Testing that winning numbers cannot be set while roulette still in 
          * progress
          */
         it("Invalid winning numbers (time)", async function () {
@@ -540,7 +539,7 @@ describe("Russian roulette contract", function () {
                 buyer.address,
                 price
             );
-            // Approving lotto to spend cost
+            // Approving roulette to spend cost
             await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
@@ -563,30 +562,23 @@ describe("Russian roulette contract", function () {
                 1,
                 1
             );
-            // logger.info("Price: ", price.toString());
 
-            let buyerCybarBalanceInitial = await cybarInstance.balanceOf(buyer.address);
-            // logger.info("Balance before transfer: ", buyerCybarBalanceInitial.toString());
             // Sending the buyer the needed amount of cybar
             await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 price
             );
-            // Approving lotto to spend cost
+            // Approving roulette to spend cost
             await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
             );
-            let buyerCybarBalanceAfterTransfer = await cybarInstance.balanceOf(buyer.address);
-            // logger.info("Balance after transfer: ", buyerCybarBalanceAfterTransfer.toString());
 
             await russianRouletteInstance.connect(buyer).batchBuyRussianRouletteTicket(
                 1,
                 1,
                 russianRoulette.newRussianRoulette.win.winningNumber
             );
-            let buyerCybarBalanceAfterBatchBuy = await cybarInstance.balanceOf(buyer.address);
-            // logger.info("Balance after batch buy: ", buyerCybarBalanceAfterBatchBuy.toString());
             // Setting current time so that drawing is correct
             // Getting the current block timestamp
             let currentTime = await russianRouletteInstance.getCurrentTime();
@@ -598,17 +590,11 @@ describe("Russian roulette contract", function () {
             await russianRouletteInstance.setCurrentTime(futureTime.toString());
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
-            let russianRouletteInfoBefore = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
-            // logger.info("Winning number before:", russianRouletteInfoBefore.winningNumber.toString());
-            // logger.info("Ticket distribution before", russianRouletteInfoBefore.ticketDistribution.toString());
             // Drawing the numbers
             let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
             )).wait();
-            let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
-            // logger.info("Winning number after", russianRouletteInfoAfter.winningNumber.toString());
-            // logger.info("Ticket Distribution after", russianRouletteInfoAfter.ticketDistribution.toString());
             // Getting the request ID out of events
             let requestId = tx.events[0].args.requestId.toString();
             // Mocking the VRF Coordinator contract for random request fulfilment 
@@ -626,7 +612,6 @@ describe("Russian roulette contract", function () {
             let futureEndTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
             // Setting the time forward 
             await russianRouletteInstance.setCurrentTime(futureEndTime.toString());
-            // logger.info("userTicketIds", userTicketIds.toString());
             // Claiming winnings 
             await russianRouletteInstance.connect(buyer).claimReward(
                 1,
@@ -634,11 +619,13 @@ describe("Russian roulette contract", function () {
             );
             let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
             // Tests
+            // zero balance before claim on winnning ticket
             assert.equal(
                 buyerCybarBalanceBefore.toString(),
                 0,
                 "Buyer has cybar balance before claiming"
             );
+            // get half prize pool due to other correct ticket number
             assert.equal(
                 buyerCybarBalanceAfter.toString(),
                 russianRoulette.newRussianRoulette.win.winPrize.toString(),
@@ -651,30 +638,22 @@ describe("Russian roulette contract", function () {
                 1,
                 1
             );
-            // logger.info("Price: ", price.toString());
-
-            let buyerCybarBalanceInitial = await cybarInstance.balanceOf(buyer.address);
-            // logger.info("Balance before transfer: ", buyerCybarBalanceInitial.toString());
             // Sending the buyer the needed amount of cybar
             await cybarInstance.connect(owner).transfer(
                 buyer.address,
                 price
             );
-            // Approving lotto to spend cost
+            // Approving roulette to spend cost
             await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
             );
-            let buyerCybarBalanceAfterTransfer = await cybarInstance.balanceOf(buyer.address);
-            // logger.info("Balance after transfer: ", buyerCybarBalanceAfterTransfer.toString());
 
             await russianRouletteInstance.connect(buyer).batchBuyRussianRouletteTicket(
                 1,
                 1,
                 russianRoulette.newRussianRoulette.win.loosingNumber
             );
-            let buyerCybarBalanceAfterBatchBuy = await cybarInstance.balanceOf(buyer.address);
-            // logger.info("Balance after batch buy: ", buyerCybarBalanceAfterBatchBuy.toString());
             // Setting current time so that drawing is correct
             // Getting the current block timestamp
             let currentTime = await russianRouletteInstance.getCurrentTime();
@@ -686,17 +665,11 @@ describe("Russian roulette contract", function () {
             await russianRouletteInstance.setCurrentTime(futureTime.toString());
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
-            let russianRouletteInfoBefore = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
-            // logger.info("Winning number before:", russianRouletteInfoBefore.winningNumber.toString());
-            // logger.info("Ticket distribution before", russianRouletteInfoBefore.ticketDistribution.toString());
             // Drawing the numbers
             let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
             )).wait();
-            let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
-            // logger.info("Winning number after", russianRouletteInfoAfter.winningNumber.toString());
-            // logger.info("Ticket Distribution after", russianRouletteInfoAfter.ticketDistribution.toString());
             // Getting the request ID out of events
             let requestId = tx.events[0].args.requestId.toString();
             // Mocking the VRF Coordinator contract for random request fulfilment 
@@ -714,7 +687,6 @@ describe("Russian roulette contract", function () {
             let futureEndTime = timeStamp.plus(russianRoulette.newRussianRoulette.closeIncrease);
             // Setting the time forward 
             await russianRouletteInstance.setCurrentTime(futureEndTime.toString());
-            // logger.info("userTicketIds", userTicketIds.toString());
             // Claiming winnings 
             await russianRouletteInstance.connect(buyer).claimReward(
                 1,
@@ -883,12 +855,12 @@ describe("Russian roulette contract", function () {
                 )
             ).to.be.revertedWith(russianRoulette.errors.invalid_claim_duplicate);
         });
-        it("Invalid claim (ticket for different lottery)", async function () {
+        it("Invalid claim (ticket for different roulette)", async function () {
             // Getting the current block timestamp
             let currentTime = await russianRouletteInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
             let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
+            // Creating a new instance of the roulette
             await russianRouletteInstance.connect(owner).createNewRussianRoulette(
                 russianRoulette.newRussianRoulette.prize,
                 russianRoulette.newRussianRoulette.cost,
@@ -905,7 +877,7 @@ describe("Russian roulette contract", function () {
                 buyer.address,
                 price
             );
-            // Approving lotto to spend cost
+            // Approving roulette to spend cost
             await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
@@ -979,16 +951,11 @@ describe("Russian roulette contract", function () {
                 buyer.address,
                 price
             );
-            // Approving lotto to spend cost
+            // Approving roulette to spend cost
             await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
             );
-            // Generating chosen numbers for buy
-            // let ticketNumbers = generateRussianRouletteNumbers({
-            //     numberOfTickets: 6,
-            //     maxRange: russianRoulette.setup.maxValidRange
-            // });
             let ticketNumbers = [1, 2, 3, 4, 5, 6, 5];
             // Batch buying tokens
             await russianRouletteInstance.connect(buyer).batchBuyRussianRouletteTicket(
@@ -1006,7 +973,7 @@ describe("Russian roulette contract", function () {
                 buyer.address,
                 price
             );
-            // Approving lotto to spend cost
+            // Approving roulette to spend cost
             await cybarInstance.connect(buyer).approve(
                 russianRouletteInstance.address,
                 price
@@ -1026,7 +993,7 @@ describe("Russian roulette contract", function () {
             // Setting the time forward 
             await russianRouletteInstance.setCurrentTime(futureTime.toString());
         });
-        it("Batch claiming winning numbers (multiple match)", async function () {
+        it("Batch claiming winning numbers", async function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
@@ -1067,7 +1034,6 @@ describe("Russian roulette contract", function () {
                 buyerCybarBalanceAfter.toString(),
                 "User balance has not changed"
             );
-            logger.info("buyerCybarBalanceAfter:", buyerCybarBalanceAfter.toString());
             assert.notEqual(
                 buyerCybarBalanceAfter.toString(),
                 russianRoulette.newRussianRoulette.win.winningNumber.toString(),
