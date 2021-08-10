@@ -294,7 +294,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         for (uint256 i = 0; i < _numberOfTickets; i++) {
             require(
                 1 <= chosenNumberForEachTicket[i] &&
-                    chosenNumberForEachTicket[i] <= 6,
+                    chosenNumberForEachTicket[i] <= maxValidRange_,
                 "Ticket number out of range"
             );
         }
