@@ -1,4 +1,4 @@
-const { 
+const {
     lotto,
     lottoNFT,
     BigNumber,
@@ -6,14 +6,19 @@ const {
 } = require("../test/settings.js");
 // The deployment script
 const main = async () => {
-    // Getting the first signer as the deployer
-    const [deployer] = await ethers.getSigners();
+    // Creating the users
+    let owner, buyer;
+    const signers = await ethers.getSigners();
+    // Creating the active wallets for use
+    owner = signers[0];
+    buyer = signers[1];
     // Saving the info to be logged in the table (deployer address)
-    var deployerLog = { Label: "Deploying Address", Info: deployer.address };
+    var deployerLog = { Label: "Deploying Address", Info: owner.address };
+    var buyerLog = { Label: "Buyer Address", Info: buyer.address };
     // Saving the info to be logged in the table (deployer address)
-    var deployerBalanceLog = { 
-        Label: "Deployer ETH Balance", 
-        Info: (await deployer.getBalance()).toString() 
+    var deployerBalanceLog = {
+        Label: "Deployer ETH Balance",
+        Info: (await owner.getBalance()).toString()
     };
 
     let mock_erc20Contract;
@@ -82,7 +87,7 @@ const main = async () => {
     );
 
     // Final set up of contracts
-    await lotteryInstance.init(
+    await lotteryInstance.initialize(
         lotteryNftInstance.address,
         randGenInstance.address
     );
@@ -96,16 +101,36 @@ const main = async () => {
         randGenInstance.address,
         lotto.buy.cybar
     );
+
+    // Getting the current block timestamp
+    let currentTime = await lotteryInstance.getCurrentTime();
+    // Converting to a BigNumber for manipulation 
+    let timeStamp = new BigNumber(currentTime.toString());
+
+    // Creating a new lottery
+    await lotteryInstance.connect(owner).createNewLotto(
+        lotto.newLotto.distribution,
+        lotto.newLotto.prize,
+        lotto.newLotto.cost,
+        timeStamp.toString(),
+        timeStamp.plus(lotto.newLotto.closeIncrease).toString()
+    );
+
+    let lottoInfo = await lotteryInstance.getBasicLottoInfo(1)
+
     // Saving the info to be logged in the table (deployer address)
     var cybarLog = { Label: "Deployed Mock Cybar Token Address", Info: cybarInstance.address };
     var lotteryLog = { Label: "Deployed Lottery Address", Info: lotteryInstance.address };
+    var lotteryID = { Label: "Deployed Lottery-ID", Info: lottoInfo.lotteryID.toString() };
     var lotteryNftLog = { Label: "Deployed Lottery NFT Address", Info: lotteryNftInstance.address };
 
     console.table([
-        deployerLog, 
-        deployerBalanceLog, 
-        cybarLog, 
+        deployerLog,
+        deployerBalanceLog,
+        buyerLog,
+        cybarLog,
         lotteryLog,
+        lotteryID,
         lotteryNftLog
     ]);
 }
@@ -115,4 +140,4 @@ main()
     .catch((error) => {
         console.error(error);
         process.exit(1);
-  });
+    });
