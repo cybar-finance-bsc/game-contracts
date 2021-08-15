@@ -32,11 +32,37 @@ There are multiple mock contracts that have been created for testing purposes. T
 
 ### Deploy
 
-To deploy the contracts locally run:
+
+To deploy the contracts locally, first run:
+
+`npx hardhat node`
+
+then:
 
 `yarn deploy:local` or `npm run deploy:local`
 
 Note that deploying the contracts locally does not require any inputs.
+Finally, a table with adresses should be returned.
+
+#### Shell Interaction
+In order to interact with the contact via shell run:
+
+`npx hardhat console --network localhost`
+
+This starts the interactive Javascript console.
+
+To obtain e.g. the lottery contract run:
+
+`const Lottery = await ethers.getContractFactory('Lottery');`
+
+`const lotterInstance = await Box.attach('<Deployed Lottery Address>')`
+
+whereas **Deployed Lottery Address** can be obtained from the returned table after local deployment.
+
+Then, one can invoke any methods such as e.g.
+
+`await lottery.getMaxRange();`
+
 
 ### Design Notes
 
