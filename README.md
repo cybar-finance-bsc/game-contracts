@@ -63,6 +63,7 @@ Then, one can invoke any methods such as e.g.
 
 `await lottery.getMaxRange();`
 
+**Ressources**: https://docs.openzeppelin.com/learn/deploying-and-interacting
 
 ### Design Notes
 
