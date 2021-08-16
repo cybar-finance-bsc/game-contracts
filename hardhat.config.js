@@ -8,7 +8,7 @@ require("solidity-coverage");
 module.exports = {
   gasReporter: {
     enabled: true,
-    currency: 'CHF',
+    currency: 'EUR',
     gasPrice: 21
   },
   networks: {
@@ -33,5 +33,5 @@ module.exports = {
         version: "0.7.3"
       }
     ]
-  } 
+  }
 };
