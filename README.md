@@ -33,13 +33,14 @@ There are multiple mock contracts that have been created for testing purposes. T
 ### Deploy
 
 
-To deploy the contracts locally, first run:
+To deploy a contracts locally, first run:
 
 `npx hardhat node`
 
 then:
 
-`yarn deploy:local` or `npm run deploy:local`
+- `yarn deploy_lottery:local` or `npm run deploy_lottery:local` for lottery
+- `yarn deploy_russian_roulette:local` or `npm run deploy_russian_roulette:local` for russian roulette
 
 Note that deploying the contracts locally does not require any inputs.
 Finally, a table with adresses should be returned.
@@ -55,7 +56,7 @@ To obtain e.g. the lottery contract run:
 
 `const Lottery = await ethers.getContractFactory('Lottery');`
 
-`const lotterInstance = await Box.attach('<Deployed Lottery Address>')`
+`const lotterInstance = await Lottery.attach('<Deployed Lottery Address>')`
 
 whereas **Deployed Lottery Address** can be obtained from the returned table after local deployment.
 
@@ -63,7 +64,9 @@ Then, one can invoke any methods such as e.g.
 
 `await lottery.getMaxRange();`
 
-**Ressources**: https://docs.openzeppelin.com/learn/deploying-and-interacting
+The way to interact with the russian roulette contract is analogous.
+
+**Resources**: https://docs.openzeppelin.com/learn/deploying-and-interacting
 
 ### Design Notes
 
