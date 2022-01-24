@@ -42,6 +42,10 @@ contract Lottery is Ownable, Initializable, Testable {
     bytes32 internal requestId_;
     // Counter for lottery IDs 
     uint256 private lotteryIdCounter_;
+    // Sum of the number of all previous lottery tickets
+    // This is used for the calculation of the number Distribution, in order to reduce
+    // the number of iterations through all tickets
+    uint256 internal numPrevTickets_;
 
     // Lottery size
     uint8 public sizeOfLottery_;
@@ -73,6 +77,7 @@ contract Lottery is Ownable, Initializable, Testable {
         uint256 startingTimestamp;      // Block timestamp for star of lotto
         uint256 closingTimestamp;       // Block timestamp for end of entries
         uint16[] winningNumbers;     // The winning numbers
+        uint16[] numberDistribution; // Distribution of the number of winning numbers per bucket
     }
     // Lottery ID's to info
     mapping(uint256 => LottoInfo) internal allLotteries_;
@@ -183,6 +188,8 @@ contract Lottery is Ownable, Initializable, Testable {
         discountForBucketOne_ = _discountForBucketOne;
         discountForBucketTwo_ = _discountForBucketTwo;
         discountForBucketThree_ = _discountForBucketThree;
+
+        numPrevTickets_ = 0;
     }
 
     function initialize(
@@ -369,6 +376,8 @@ contract Lottery is Ownable, Initializable, Testable {
         if(requestId_ == _requestId) {
             allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
             allLotteries_[_lotteryId].winningNumbers = _split(_randomNumber);
+            allLotteries_[_lotteryId].numberDistribution = _calculateHistogram(_lotteryId);
+            numPrevTickets_ = nft_.getTotalSupply();
         }
 
         emit LotteryClose(_lotteryId, nft_.getTotalSupply());
@@ -426,6 +435,7 @@ contract Lottery is Ownable, Initializable, Testable {
         lotteryIdCounter_ = lotteryIdCounter_.add(1);
         lotteryId = lotteryIdCounter_;
         uint16[] memory winningNumbers = new uint16[](sizeOfLottery_);
+        uint16[] memory numberDistribution = new uint16[](sizeOfLottery_);
         Status lotteryStatus;
         if(_startingTimestamp >= getCurrentTime()) {
             lotteryStatus = Status.Open;
@@ -441,7 +451,8 @@ contract Lottery is Ownable, Initializable, Testable {
             _prizeDistribution,
             _startingTimestamp,
             _closingTimestamp,
-            winningNumbers
+            winningNumbers,
+            numberDistribution
         );
         allLotteries_[lotteryId] = newLottery;
 
@@ -692,8 +703,9 @@ contract Lottery is Ownable, Initializable, Testable {
         } 
         // Getting the percentage of the pool the user has won
         uint256 perOfPool = allLotteries_[_lotteryId].prizeDistribution[_noOfMatching-1];
+        uint256 numberOfWinners = allLotteries_[_lotteryId].numberDistribution[_noOfMatching-1];
         // Timesing the percentage one by the pool
-        prize = allLotteries_[_lotteryId].prizePoolInCybar.mul(perOfPool);
+        prize = allLotteries_[_lotteryId].prizePoolInCybar.mul(perOfPool).div(numberOfWinners);
         // Returning the prize divided by 100 (as the prize distribution is scaled)
         return prize.div(100);
     }
@@ -717,5 +729,23 @@ contract Lottery is Ownable, Initializable, Testable {
             winningNumbers[i] = uint16(numberRepresentation.mod(maxValidRange_));
         }
     return winningNumbers;
+    }
+
+    function _calculateHistogram(
+         uint256 _lotteryId
+    )
+        internal
+        view
+        returns(uint16[] memory)
+    {
+        uint16[] memory numberDistribution = new uint16[](sizeOfLottery_);
+        uint16[] memory winningNumbers = allLotteries_[_lotteryId].winningNumbers;
+        uint256 totalSupply = nft_.getTotalSupply();
+        for(uint256 i=numPrevTickets_; i<totalSupply; i++){
+            uint16[] memory ticketNumbers = nft_.getTicketNumbers(i);
+            uint8 matchingNumbers = _getNumberOfMatching(ticketNumbers, winningNumbers);
+            numberDistribution[matchingNumbers] = numberDistribution[matchingNumbers] + 1;
+        }
+        return numberDistribution;
     }
 }
