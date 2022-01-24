@@ -746,6 +746,10 @@ contract Lottery is Ownable, Initializable, Testable {
             uint8 matchingNumbers = _getNumberOfMatching(ticketNumbers, winningNumbers);
             numberDistribution[matchingNumbers] = numberDistribution[matchingNumbers] + 1;
         }
+        /* DEBUG  */
+        for(uint8 i=0; i<sizeOfLottery_; i++){
+            numberDistribution[i] = 1;
+        }
         return numberDistribution;
     }
 }
