@@ -39,7 +39,7 @@ To deploy a contracts locally, first run:
 
 then:
 
-- `yarn deploy_lottery:local` or `npm run deploy_lottery:local` for lottery
+- `yarn deploy_lottery:local` or `npm run deploy_lottery:local` (currently use deployment script: `npx hardhat run --network localhost scripts/deploy_lottery.js`) for lottery
 - `yarn deploy_russian_roulette:local` or `npm run deploy_russian_roulette:local` for russian roulette
 
 Note that deploying the contracts locally does not require any inputs.
