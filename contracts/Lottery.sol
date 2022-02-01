@@ -45,7 +45,7 @@ contract Lottery is Ownable, Initializable, Testable {
     // Sum of the number of all previous lottery tickets
     // This is used for the calculation of the number Distribution, in order to reduce
     // the number of iterations through all tickets
-    /* uint256 internal numPrevTickets_; */
+    uint256 internal numPrevTickets_;
 
     // Lottery size
     uint8 public sizeOfLottery_;
@@ -77,7 +77,7 @@ contract Lottery is Ownable, Initializable, Testable {
         uint256 startingTimestamp;      // Block timestamp for star of lotto
         uint256 closingTimestamp;       // Block timestamp for end of entries
         uint16[] winningNumbers;     // The winning numbers
-        uint16[] numberDistribution; // Distribution of the number of winning numbers per bucket
+        uint256[] numberDistribution; // Distribution of the number of winning numbers per bucket
     }
     // Lottery ID's to info
     mapping(uint256 => LottoInfo) internal allLotteries_;
@@ -189,7 +189,7 @@ contract Lottery is Ownable, Initializable, Testable {
         discountForBucketTwo_ = _discountForBucketTwo;
         discountForBucketThree_ = _discountForBucketThree;
 
-        /* numPrevTickets_ = 0; */
+        numPrevTickets_ = 1;
     }
 
     function initialize(
@@ -377,7 +377,7 @@ contract Lottery is Ownable, Initializable, Testable {
             allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
             allLotteries_[_lotteryId].winningNumbers = _split(_randomNumber);
             allLotteries_[_lotteryId].numberDistribution = _calculateHistogram(_lotteryId);
-            /* numPrevTickets_ = nft_.getTotalSupply(); */
+            numPrevTickets_ = nft_.getTotalSupply();
         }
 
         emit LotteryClose(_lotteryId, nft_.getTotalSupply());
@@ -435,7 +435,10 @@ contract Lottery is Ownable, Initializable, Testable {
         lotteryIdCounter_ = lotteryIdCounter_.add(1);
         lotteryId = lotteryIdCounter_;
         uint16[] memory winningNumbers = new uint16[](sizeOfLottery_);
-        uint16[] memory numberDistribution = new uint16[](sizeOfLottery_);
+        uint256[] memory numberDistribution = new uint256[](sizeOfLottery_);
+        for(uint8 i=0; i<sizeOfLottery_; i++){
+            numberDistribution[i] = 1;
+        }
         Status lotteryStatus;
         if(_startingTimestamp >= getCurrentTime()) {
             lotteryStatus = Status.Open;
@@ -705,6 +708,7 @@ contract Lottery is Ownable, Initializable, Testable {
         uint256 perOfPool = allLotteries_[_lotteryId].prizeDistribution[_noOfMatching-1];
         uint256 numberOfWinners = allLotteries_[_lotteryId].numberDistribution[_noOfMatching-1];
         // Timesing the percentage one by the pool
+        /* prize = allLotteries_[_lotteryId].prizePoolInCybar.mul(perOfPool).div(1); */
         prize = allLotteries_[_lotteryId].prizePoolInCybar.mul(perOfPool).div(numberOfWinners);
         // Returning the prize divided by 100 (as the prize distribution is scaled)
         return prize.div(100);
@@ -736,20 +740,21 @@ contract Lottery is Ownable, Initializable, Testable {
     )
         internal
         view
-        returns(uint16[] memory)
+        returns(uint256[] memory)
     {
-        uint16[] memory numberDistribution = new uint16[](sizeOfLottery_);
-        /* uint16[] memory winningNumbers = allLotteries_[_lotteryId].winningNumbers; */
-        /* uint256 totalSupply = nft_.getTotalSupply(); */
-        /* for(uint256 i=numPrevTickets_; i<totalSupply; i++){ */
-        /*     uint16[] memory ticketNumbers = nft_.getTicketNumbers(i); */
-        /*     uint8 matchingNumbers = _getNumberOfMatching(ticketNumbers, winningNumbers); */
-        /*     numberDistribution[matchingNumbers] = numberDistribution[matchingNumbers] + 1; */
-        /* } */
-        /* /\* DEBUG  *\/ */
-        /* for(uint8 i=0; i<sizeOfLottery_; i++){ */
-        /*     numberDistribution[i] = 1; */
-        /* } */
+        uint256[] memory numberDistribution = new uint256[](sizeOfLottery_);
+        for(uint8 i=0; i<sizeOfLottery_; i++){
+            numberDistribution[i] = 0;
+        }
+        uint16[] memory winningNumbers = allLotteries_[_lotteryId].winningNumbers;
+        uint256 totalSupply = nft_.getTotalSupply();
+        for(uint256 i=numPrevTickets_; i<=totalSupply; i++){
+            uint16[] memory ticketNumbers = nft_.getTicketNumbers(i);
+            uint8 matchingNumbers = _getNumberOfMatching(ticketNumbers, winningNumbers);
+            if(matchingNumbers!=0){
+                numberDistribution[matchingNumbers-1] = numberDistribution[matchingNumbers-1] + 1;
+            }
+        }
         return numberDistribution;
     }
 }
