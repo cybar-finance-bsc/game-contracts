@@ -377,7 +377,7 @@ contract Lottery is Ownable, Initializable, Testable {
             allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
             allLotteries_[_lotteryId].winningNumbers = _split(_randomNumber);
             allLotteries_[_lotteryId].numberDistribution = _calculateHistogram(_lotteryId);
-            numPrevTickets_ = nft_.getTotalSupply();
+            numPrevTickets_ = nft_.getTotalSupply()+1;
         }
 
         emit LotteryClose(_lotteryId, nft_.getTotalSupply());
@@ -576,7 +576,7 @@ contract Lottery is Ownable, Initializable, Testable {
             _lotteryId
         );
         // Removing the prize amount from the pool
-        allLotteries_[_lotteryId].prizePoolInCybar = allLotteries_[_lotteryId].prizePoolInCybar.sub(prizeAmount);
+        // allLotteries_[_lotteryId].prizePoolInCybar = allLotteries_[_lotteryId].prizePoolInCybar.sub(prizeAmount);
         // Transfering the user their winnings
         cybar_.safeTransfer(address(msg.sender), prizeAmount);
     }
