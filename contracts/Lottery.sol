@@ -45,7 +45,7 @@ contract Lottery is Ownable, Initializable, Testable {
     // Sum of the number of all previous lottery tickets
     // This is used for the calculation of the number Distribution, in order to reduce
     // the number of iterations through all tickets
-    uint256 internal numPrevTickets_;
+    uint256 internal idFirstTicket_;
 
     // Lottery size
     uint8 public sizeOfLottery_;
@@ -189,7 +189,7 @@ contract Lottery is Ownable, Initializable, Testable {
         discountForBucketTwo_ = _discountForBucketTwo;
         discountForBucketThree_ = _discountForBucketThree;
 
-        numPrevTickets_ = 1;
+        idFirstTicket_ = 1;
     }
 
     function initialize(
@@ -377,7 +377,7 @@ contract Lottery is Ownable, Initializable, Testable {
             allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
             allLotteries_[_lotteryId].winningNumbers = _split(_randomNumber);
             allLotteries_[_lotteryId].numberDistribution = _calculateHistogram(_lotteryId);
-            numPrevTickets_ = nft_.getTotalSupply()+1;
+            idFirstTicket_ = nft_.getTotalSupply()+1;
         }
 
         emit LotteryClose(_lotteryId, nft_.getTotalSupply());
@@ -748,7 +748,7 @@ contract Lottery is Ownable, Initializable, Testable {
         }
         uint16[] memory winningNumbers = allLotteries_[_lotteryId].winningNumbers;
         uint256 totalSupply = nft_.getTotalSupply();
-        for(uint256 i=numPrevTickets_; i<=totalSupply; i++){
+        for(uint256 i=idFirstTicket_; i<=totalSupply; i++){
             uint16[] memory ticketNumbers = nft_.getTicketNumbers(i);
             uint8 matchingNumbers = _getNumberOfMatching(ticketNumbers, winningNumbers);
             if(matchingNumbers!=0){
