@@ -677,7 +677,6 @@ describe("Lottery contract", function() {
             )).wait();
             // Getting the request ID out of events
             let requestId = tx.events[0].args.requestId.toString();
-            console.log(requestId);
             // Mocking the VRF Coordinator contract for random request fulfilment 
             await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
                 requestId,
@@ -685,10 +684,9 @@ describe("Lottery contract", function() {
                 randGenInstance.address
             );
             let lottoInfo = await lotteryInstance.getBasicLottoInfo(1);
-            console.log(lottoInfo.lotteryStatus);
             console.log("Number distribution");
             lottoInfo.numberDistribution.forEach(element =>console.log(element.toString()));
-            let userTicketNumbers = await lotteryNftInstance.getTicketNumbers(50);
+            let userTicketNumbers = await lotteryNftInstance.getTicketNumbers(51);
             console.log(userTicketNumbers);
             console.log(lottoInfo.winningNumbers);
             let totalSupply = await lotteryNftInstance.getTotalSupply();
