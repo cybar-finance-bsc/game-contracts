@@ -7,8 +7,10 @@
     "test": "npx hardhat test",
     "clean": "rm -rf artifacts && rm -rf cache && rm -rf coverage && rm -rf coverage.json && rm -rf .solcover.js && rm -rf yarn.lock",
     "cover": "npx hardhat coverage",
-    "deploy_lottery:local": "hardhat run scripts/deploy_lottery.js",
-    "deploy_russian_roulette:local": "hardhat run scripts/deploy_russian_roulette.js"
+    "deploy_lottery_test:local": "hardhat run scripts/deploy_lottery_local.js",
+    "deploy_lottery_test:test_net": "hardhat run scripts/deploy_lottery_test.js",
+    "deploy_russian_roulette_test:local": "hardhat run scripts/deploy_russian_roulette_local.js",
+    "deploy_russian_roulette_test:test_net": "hardhat run scripts/deploy_russian_roulette.js"
   },
   "dependencies": {
     "@chainlink/contracts": "0.1.6",
@@ -24,7 +26,8 @@
     "hardhat": "2.0.11",
     "hardhat-gas-reporter": "1.0.4",
     "solidity-coverage": "0.7.16",
-    "solc": "0.7.3"
+    "solc": "0.7.3",
+    "seedrandom": "3.0.5"
   },
   "devDependencies": {}
 }
