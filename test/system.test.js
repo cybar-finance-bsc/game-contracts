@@ -1,13 +1,14 @@
 const { expect, assert } = require("chai");
 const { network } = require("hardhat");
-const { 
+const {
     lotto,
     lottoNFT,
     BigNumber,
-    generateLottoNumbers
+    generateLottoNumbers,
+    generateFixedLottoNumbers
 } = require("./settings.js");
 
-describe("Lottery contract", function() {
+describe("Lottery contract", function () {
     let mock_erc20Contract;
     // Creating the instance and contract info for the lottery contract
     let lotteryInstance, lotteryContract;
@@ -23,7 +24,7 @@ describe("Lottery contract", function() {
     // the ChainLink contract ecosystem. 
     let linkInstance;
     let mock_vrfCoordInstance, mock_vrfCoordContract;
-    
+
     // Creating the users
     let owner, buyer;
 
@@ -98,11 +99,11 @@ describe("Lottery contract", function() {
         );
     });
 
-    describe("Creating a new lottery tests", function() {
+    describe("Creating a new lottery tests", function () {
         /**
          * Tests that in the nominal case nothing goes wrong
          */
-        it("Nominal case", async function() {
+        it("Nominal case", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -117,16 +118,16 @@ describe("Lottery contract", function() {
                     timeStamp.plus(lotto.newLotto.closeIncrease).toString()
                 )
             ).to.emit(lotteryInstance, lotto.events.new)
-            // Checking that emitted event contains correct information
-            .withArgs(
-                1,
-                0
-            );
+                // Checking that emitted event contains correct information
+                .withArgs(
+                    1,
+                    0
+                );
         });
         /**
          * Testing that non-admins cannot create a lotto
          */
-        it("Invalid admin", async function() {
+        it("Invalid admin", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -145,7 +146,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that an invalid distribution will fail
          */
-        it("Invalid price distribution length", async function() {
+        it("Invalid price distribution length", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -164,7 +165,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that an invalid distribution will fail
          */
-        it("Invalid price distribution total", async function() {
+        it("Invalid price distribution total", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -183,7 +184,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that an invalid prize and cost will fail
          */
-        it("Invalid price distribution", async function() {
+        it("Invalid price distribution", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -212,7 +213,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that an invalid prize and cost will fail
          */
-        it("Invalid timestamps", async function() {
+        it("Invalid timestamps", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -240,12 +241,12 @@ describe("Lottery contract", function() {
         });
     });
 
-    describe("Buying tickets tests", function() {
+    describe("Buying tickets tests", function () {
         /**
          * Creating a lotto for all buying tests to use. Will be a new instance
          * for each lotto. 
          */
-        beforeEach( async () => {
+        beforeEach(async () => {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -262,7 +263,7 @@ describe("Lottery contract", function() {
         /**
          * Tests cost per ticket is as expected
          */
-        it("Cost per ticket", async function() {
+        it("Cost per ticket", async function () {
             let totalPrice = await lotteryInstance.costToBuyTickets(
                 1,
                 10
@@ -286,7 +287,7 @@ describe("Lottery contract", function() {
         /**
          * Tests the batch buying of one token
          */
-        it("Batch buying 1 tickets", async function() {
+        it("Batch buying 1 tickets", async function () {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -294,7 +295,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 1, 
+                numberOfTickets: 1,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -319,7 +320,7 @@ describe("Lottery contract", function() {
         /**
          * Tests the batch buying of ten token
          */
-        it("Batch buying 10 tickets", async function() {
+        it("Batch buying 10 tickets", async function () {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -327,7 +328,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 10, 
+                numberOfTickets: 10,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -353,7 +354,7 @@ describe("Lottery contract", function() {
         /**
          * Tests the batch buying of fifty token
          */
-        it("Batch buying 50 tickets", async function() {
+        it("Batch buying 50 tickets", async function () {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -361,7 +362,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -382,11 +383,11 @@ describe("Lottery contract", function() {
                 lotto.buy.fifty.cost,
                 "Incorrect cost for batch buy of 50"
             );
-        }); 
+        });
         /**
          * Tests the batch buying with invalid ticket numbers
          */
-        it("Invalid chosen numbers", async function() {
+        it("Invalid chosen numbers", async function () {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -394,7 +395,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 9, 
+                numberOfTickets: 9,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -415,7 +416,7 @@ describe("Lottery contract", function() {
         /**
          * Tests the batch buying with invalid approve
          */
-        it("Invalid cybar transfer", async function() {
+        it("Invalid cybar transfer", async function () {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -423,7 +424,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 10, 
+                numberOfTickets: 10,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -439,7 +440,7 @@ describe("Lottery contract", function() {
         /**
          * Tests the batch buying after the valid time period fails
          */
-        it("Invalid buying time", async function() {
+        it("Invalid buying time", async function () {
             // Getting the price to buy
             let price = await lotteryInstance.costToBuyTickets(
                 1,
@@ -447,7 +448,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 10, 
+                numberOfTickets: 10,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -475,8 +476,8 @@ describe("Lottery contract", function() {
         });
     });
 
-    describe("Drawing numbers tests", function() {
-        beforeEach( async () => {
+    describe("Drawing numbers tests", function () {
+        beforeEach(async () => {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -493,7 +494,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that the winning numbers can be set in the nominal case
          */
-        it("Setting winning numbers", async function() {
+        it("Setting winning numbers", async function () {
             let lotteryInfoBefore = await lotteryInstance.getBasicLottoInfo(1);
             // Setting the time so that we can set winning numbers
             // Getting the current block timestamp
@@ -534,7 +535,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that a non owner cannot set the winning numbers
          */
-        it("Invalid winning numbers (owner)", async function() {
+        it("Invalid winning numbers (owner)", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -554,7 +555,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that numbers cannot be updated once chosen
          */
-        it("Invalid winning numbers (already chosen)", async function() {
+        it("Invalid winning numbers (already chosen)", async function () {
             // Setting the time so that we can set winning numbers
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
@@ -581,7 +582,7 @@ describe("Lottery contract", function() {
          * Testing that winning numbers cannot be set while lottery still in 
          * progress
          */
-        it("Invalid winning numbers (time)", async function() {
+        it("Invalid winning numbers (time)", async function () {
             await expect(
                 lotteryInstance.connect(owner).drawWinningNumbers(
                     1,
@@ -591,8 +592,8 @@ describe("Lottery contract", function() {
         });
     });
 
-    describe("Claiming tickets tests", function() {
-        beforeEach( async () => {
+    describe("Claiming tickets tests", function () {
+        beforeEach(async () => {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -622,8 +623,8 @@ describe("Lottery contract", function() {
                 prices[2]
             );
             // Generating chosen numbers for buy
-            let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+            let ticketNumbers = generateFixedLottoNumbers({
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -638,7 +639,7 @@ describe("Lottery contract", function() {
          * Testing that claiming numbers (4 match) changes the users balance
          * correctly. 
          */
-        it("Claiming winning numbers (4 (all) match)", async function() {
+        it("Claiming winning numbers (4 (all) match)", async function () {
             // Getting the price to buy
             let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
                 1,
@@ -684,17 +685,17 @@ describe("Lottery contract", function() {
                 randGenInstance.address
             );
             let lottoInfo = await lotteryInstance.getBasicLottoInfo(1);
-            console.log("Number distribution");
-            lottoInfo.numberDistribution.forEach(element =>console.log(element.toString()));
+            // console.log("Number distribution");
+            lottoInfo.numberDistribution.forEach(element => console.log(element.toString()));
             let userTicketNumbers = await lotteryNftInstance.getTicketNumbers(51);
-            console.log(userTicketNumbers);
-            console.log(lottoInfo.winningNumbers);
+            // console.log(userTicketNumbers);
+            // console.log(lottoInfo.winningNumbers);
             let totalSupply = await lotteryNftInstance.getTotalSupply();
-            console.log(totalSupply.toString());
-            for(let i=0; i<=totalSupply; i++){
-                userTicketNumbers = await lotteryNftInstance.getTicketNumbers(i);
-                console.log(userTicketNumbers);
-            }
+            // console.log(totalSupply.toString());
+            // for (let i = 0; i <= totalSupply; i++) {
+            //     userTicketNumbers = await lotteryNftInstance.getTicketNumbers(i);
+            //     console.log(userTicketNumbers);
+            // }
             // userTicketNumbers = await lotteryNftInstance.getTicketNumbers(0);
             // console.log(userTicketNumbers);
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
@@ -728,7 +729,7 @@ describe("Lottery contract", function() {
          * Testing that claiming numbers (3 match) changes the users balance
          * correctly. 
          */
-        it("Claiming winning numbers (3 match)", async function() {
+        it("Claiming winning numbers (3 match)", async function () {
             // Getting the price to buy
             let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
                 1,
@@ -806,7 +807,7 @@ describe("Lottery contract", function() {
          * Testing that claiming numbers (2 match) changes the users balance
          * correctly. 
          */
-        it("Claiming winning numbers (2 match)", async function() {
+        it("Claiming winning numbers (2 match)", async function () {
             // Getting the price to buy
             let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
                 1,
@@ -885,7 +886,7 @@ describe("Lottery contract", function() {
          * Testing that claiming numbers (1 match) changes the users balance
          * correctly. 
          */
-        it("Claiming winning numbers (1 match)", async function() {
+        it("Claiming winning numbers (1 match)", async function () {
             // Getting the price to buy
             let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
                 1,
@@ -965,7 +966,7 @@ describe("Lottery contract", function() {
          * Testing that claiming numbers (0 match) changes the users balance
          * correctly. 
          */
-        it("Claiming winning numbers (0 (none) match)", async function() {
+        it("Claiming winning numbers (0 (none) match)", async function () {
             // Getting the price to buy
             let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
                 1,
@@ -1045,7 +1046,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that a claim cannot happen while the lottery is still active
          */
-        it("Invalid claim (incorrect time)", async function() {
+        it("Invalid claim (incorrect time)", async function () {
             // Setting current time so that drawing is correct
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
@@ -1083,7 +1084,7 @@ describe("Lottery contract", function() {
          * Testing that a claim cannot happen until the winning numbers are
          * chosen. 
          */
-        it("Invalid claim (winning numbers not chosen)", async function() {
+        it("Invalid claim (winning numbers not chosen)", async function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Getting the current block timestamp
@@ -1104,7 +1105,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that only the owner of a token can claim winnings
          */
-        it("Invalid claim (not owner)", async function() {
+        it("Invalid claim (not owner)", async function () {
             // Setting current time so that drawing is correct
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
@@ -1147,7 +1148,7 @@ describe("Lottery contract", function() {
         /**
          * Testing that a ticket cannot be claimed twice
          */
-        it("Invalid claim (already claimed)", async function() {
+        it("Invalid claim (already claimed)", async function () {
             // Setting current time so that drawing is correct
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
@@ -1195,7 +1196,7 @@ describe("Lottery contract", function() {
         /**
          * Tests that numbers outside of range are rejected on claim
          */
-        it("Invalid claim (numbers out of range)", async function() {
+        it("Invalid claim (numbers out of range)", async function () {
             // Getting the price to buy
             let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
                 1,
@@ -1256,7 +1257,7 @@ describe("Lottery contract", function() {
             ).to.be.revertedWith(lotto.errors.invalid_numbers_range);
         });
 
-        it("Invalid claim (ticket for different lottery)", async function() {
+        it("Invalid claim (ticket for different lottery)", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1330,8 +1331,8 @@ describe("Lottery contract", function() {
         });
     });
 
-    describe("Batch claiming tickets tests", function() {
-        beforeEach( async () => {
+    describe("Batch claiming tickets tests", function () {
+        beforeEach(async () => {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1362,7 +1363,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 49, 
+                numberOfTickets: 49,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -1403,7 +1404,7 @@ describe("Lottery contract", function() {
             await lotteryInstance.setCurrentTime(futureTime.toString());
         });
 
-        it("Batch claiming winning numbers (multiple match)", async function() {
+        it("Batch claiming winning numbers (multiple match)", async function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
@@ -1452,11 +1453,11 @@ describe("Lottery contract", function() {
         });
     });
 
-    describe("Upgrade functionality tests", function() {
+    describe("Upgrade functionality tests", function () {
         /**
          * Tests that an admin can update the size of a lottery
          */
-        it("Update size of lottery", async function() {
+        it("Update size of lottery", async function () {
             // Getting the size of the lottery
             let sizeOfLottery = await lotteryInstance.sizeOfLottery_();
             // Updating the size of the lottery
@@ -1478,7 +1479,7 @@ describe("Lottery contract", function() {
         /**
          * Tests that size cannot be updated to current size
          */
-        it("Invalid update size of lottery (same as current)", async function() {
+        it("Invalid update size of lottery (same as current)", async function () {
             // Getting the size of the lottery
             let sizeOfLottery = await lotteryInstance.sizeOfLottery_();
             // Updating the size of the lottery
@@ -1489,7 +1490,7 @@ describe("Lottery contract", function() {
         /**
          * Tests that a non owner cannot change the size of a lottery
          */
-        it("Invalid update size of lottery (non-owner)", async function() {
+        it("Invalid update size of lottery (non-owner)", async function () {
             // Updating the size of the lottery
             await expect(
                 lotteryInstance.connect(buyer).updateSizeOfLottery(
@@ -1500,7 +1501,7 @@ describe("Lottery contract", function() {
         /**
          * Tests that an admin can update the max range of numbers
          */
-        it("Update range of numbers", async function() {
+        it("Update range of numbers", async function () {
             // Getting the range
             let maxRange = await lotteryInstance.maxValidRange_();
             // Updating range
@@ -1524,7 +1525,7 @@ describe("Lottery contract", function() {
         /**
          * Tests that max range cannot be updated to current range
          */
-        it("Invalid update size of lottery (same as current)", async function() {
+        it("Invalid update size of lottery (same as current)", async function () {
             // Updating range
             await expect(
                 lotteryInstance.connect(owner).updateMaxRange(
@@ -1535,7 +1536,7 @@ describe("Lottery contract", function() {
         /**
          * Tests that a non owner cannot change the max range
          */
-        it("Invalid update size of lottery (non-owner)", async function() {
+        it("Invalid update size of lottery (non-owner)", async function () {
             // Updating the size of the lottery
             await expect(
                 lotteryInstance.connect(buyer).updateMaxRange(
@@ -1544,7 +1545,7 @@ describe("Lottery contract", function() {
             ).to.be.revertedWith(lotto.errors.invalid_admin);
         });
 
-        it("Update buckets", async function() {
+        it("Update buckets", async function () {
             // Getting the size of the lottery
             let bucketOne = await lotteryInstance.bucketOneMax_();
             let bucketTwo = await lotteryInstance.bucketTwoMax_();
@@ -1618,7 +1619,7 @@ describe("Lottery contract", function() {
             );
         });
 
-        it("Invalid bucket update (non owner)", async function() {
+        it("Invalid bucket update (non owner)", async function () {
             await expect(
                 lotteryInstance.connect(buyer).updateBuckets(
                     lotto.update.bucket.one,
@@ -1630,7 +1631,7 @@ describe("Lottery contract", function() {
             ).to.be.revertedWith(lotto.errors.invalid_admin);
         });
 
-        it("Invalid bucket update (max 0)", async function() {
+        it("Invalid bucket update (max 0)", async function () {
             await expect(
                 lotteryInstance.connect(owner).updateBuckets(
                     lotto.errorData.bucket,
@@ -1651,7 +1652,7 @@ describe("Lottery contract", function() {
             ).to.be.revertedWith(lotto.errors.invalid_bucket_range);
         });
 
-        it("Invalid bucket update (discount increase)", async function() {
+        it("Invalid bucket update (discount increase)", async function () {
             await expect(
                 lotteryInstance.connect(owner).updateBuckets(
                     lotto.update.bucket.one,
@@ -1672,7 +1673,7 @@ describe("Lottery contract", function() {
             ).to.be.revertedWith(lotto.errors.invalid_bucket_discount);
         });
 
-        it("Withdraw excess cybar", async function() {
+        it("Withdraw excess cybar", async function () {
             let ownerCybarBalance = await cybarInstance.balanceOf(owner.address);
             let lotteryCybarBalance = await cybarInstance.balanceOf(lotteryInstance.address);
             await lotteryInstance.connect(owner).withdrawCybar(lotteryCybarBalance);
@@ -1696,7 +1697,7 @@ describe("Lottery contract", function() {
             );
         });
 
-        it("Invalid withdraw excess cybar (non owner)", async function() {
+        it("Invalid withdraw excess cybar (non owner)", async function () {
             let lotteryCybarBalance = await cybarInstance.balanceOf(lotteryInstance.address);
             await expect(
                 lotteryInstance.connect(buyer).withdrawCybar(lotteryCybarBalance)
@@ -1704,8 +1705,8 @@ describe("Lottery contract", function() {
         });
     });
 
-    describe("View function tests", function() {
-        it("Get Lotto discount", async function() {
+    describe("View function tests", function () {
+        it("Get Lotto discount", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1778,7 +1779,7 @@ describe("Lottery contract", function() {
             );
         });
 
-        it("Get Lotto Info", async function() {
+        it("Get Lotto Info", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1821,7 +1822,7 @@ describe("Lottery contract", function() {
             );
         });
 
-        it("Get User Tickets", async function() {
+        it("Get User Tickets", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1852,7 +1853,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -1880,7 +1881,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -1908,7 +1909,7 @@ describe("Lottery contract", function() {
                 1,
                 buyer.address
             );
-            let allTickets = [...tickets[0],...ticketsTwo[0]];
+            let allTickets = [...tickets[0], ...ticketsTwo[0]];
 
             assert.equal(
                 userTickets[99].toString(),
@@ -1917,7 +1918,7 @@ describe("Lottery contract", function() {
             );
         });
 
-        it("Get User Tickets", async function() {
+        it("Get User Tickets", async function () {
             // Getting the current block timestamp
             let currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -1948,7 +1949,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -1976,7 +1977,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2004,7 +2005,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2032,7 +2033,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2060,7 +2061,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2088,7 +2089,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2116,7 +2117,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2144,7 +2145,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2172,7 +2173,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });
@@ -2200,7 +2201,7 @@ describe("Lottery contract", function() {
             );
             // Generating chosen numbers for buy
             ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50, 
+                numberOfTickets: 50,
                 lottoSize: lotto.setup.sizeOfLottery,
                 maxRange: lotto.setup.maxValidRange
             });

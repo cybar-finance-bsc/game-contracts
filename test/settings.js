@@ -1,5 +1,7 @@
 const { ethers } = require("ethers");
 const { BigNumber } = require("bignumber.js");
+var seedrandom = require('seedrandom');
+
 
 const lotto = {
     setup: {
@@ -38,13 +40,13 @@ const lotto = {
             blankWinningNumbers: "0,0,0,0",
             simpleWinningNumbers: "1,2,3,4",
             winningNumbers: "18,17,5,3",
-            winningNumbersArr: [ 18, 17, 5, 3 ],
+            winningNumbersArr: [18, 17, 5, 3],
             match_all: ethers.utils.parseUnits("500", 18),
             match_three: ethers.utils.parseUnits("350", 18),
             match_two: ethers.utils.parseUnits("100", 18),
-            match_one: ethers.utils.parseUnits("50", 18),
+            match_one: ethers.utils.parseUnits("5.555555555555555555", 18),
         }
-    }, 
+    },
     chainLink: {
         keyHash: "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4",
         fee: ethers.utils.parseUnits("1", 19)
@@ -135,7 +137,24 @@ function generateLottoNumbers({
     let counterForNumbers = 0;
     for (let i = 0; i < numberOfTickets; i++) {
         for (let j = 0; j < lottoSize; j++) {
-            numberOfNumbers[counterForNumbers] = Math.floor(Math.random() * maxRange + 1); 
+            numberOfNumbers[counterForNumbers] = Math.floor(Math.random() * maxRange + 1);
+            counterForNumbers += 1;
+        }
+    }
+    return numberOfNumbers;
+}
+
+function generateFixedLottoNumbers({
+    numberOfTickets,
+    lottoSize,
+    maxRange
+}) {
+    var rng = seedrandom('42');
+    var numberOfNumbers = [];
+    let counterForNumbers = 0;
+    for (let i = 0; i < numberOfTickets; i++) {
+        for (let j = 0; j < lottoSize; j++) {
+            numberOfNumbers[counterForNumbers] = Math.floor(rng() * maxRange + 1);
             counterForNumbers += 1;
         }
     }
@@ -146,5 +165,6 @@ module.exports = {
     lotto,
     lottoNFT,
     BigNumber,
-    generateLottoNumbers
+    generateLottoNumbers,
+    generateFixedLottoNumbers
 }
