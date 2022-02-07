@@ -5,6 +5,10 @@ require("solidity-coverage");
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
+const fs = require('fs');
+const private_key = fs.readFileSync("./untracked/private_key").toString().trim();
+
+
 module.exports = {
   gasReporter: {
     enabled: true,
@@ -20,6 +24,11 @@ module.exports = {
       blockGasLimit: 13000000,
       gasPrice: 20
     },
+    fantom_testnet: {
+      url: "https://rpc.testnet.fantom.network/",
+      chainId: "0xfa2",
+      accounts: [private_key]
+    }
   },
   solidity: {
     compilers: [
@@ -27,8 +36,8 @@ module.exports = {
         version: "0.6.12",
         settings: {
           optimizer: {
-              enabled: true,
-              runs: 1000,
+            enabled: true,
+            runs: 1000,
           },
         },
       },
