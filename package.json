@@ -8,7 +8,7 @@
     "clean": "rm -rf artifacts && rm -rf cache && rm -rf coverage && rm -rf coverage.json && rm -rf .solcover.js && rm -rf yarn.lock",
     "cover": "npx hardhat coverage",
     "deploy_lottery_test:local": "hardhat run scripts/deploy_lottery_local.js",
-    "deploy_lottery_test:test_net": "hardhat run scripts/deploy_lottery_test.js",
+    "deploy_lottery_test:test_net": "hardhat run scripts/deploy_lottery_test.js --network fantom_testnet",
     "deploy_russian_roulette_test:local": "hardhat run scripts/deploy_russian_roulette_local.js",
     "deploy_russian_roulette_test:test_net": "hardhat run scripts/deploy_russian_roulette.js"
   },
