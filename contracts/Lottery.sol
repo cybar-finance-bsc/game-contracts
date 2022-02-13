@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
 // Inherited allowing for ownership of contract
 import "@openzeppelin/contracts/access/Ownable.sol";
 // Allows for intergration with ChainLink VRF
-import "./IRandomNumberGenerator.sol";
+import "./interfaces/IRandomNumberGenerator.sol";
 // Interface for Lottery NFT to mint tokens
-import "./ILotteryNFT.sol";
+import "./interfaces/ILotteryNFT.sol";
 // Allows for time manipulation. Set to 0x address on test/mainnet deploy
 import "./Testable.sol";
 // Safe math
@@ -318,10 +318,7 @@ contract Lottery is Ownable, Initializable, Testable {
         // Sets lottery status to closed
         allLotteries_[_lotteryId].lotteryStatus = Status.Closed;
         // Requests a random number from the generator
-        uint256 _randomNumber = randomGenerator_.getRandomNumber(
-            _lotteryId,
-            _seed
-        );
+        uint256 _randomNumber = randomGenerator_.getRandomNumber(_seed);
         allLotteries_[_lotteryId].winningNumbers = _setWinningNumbers(
             _randomNumber
         );

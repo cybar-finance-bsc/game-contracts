@@ -5,21 +5,21 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./ILottery.sol";
+import "./interfaces/ILottery.sol";
 import "./Testable.sol";
-// Safe math 
+// Safe math
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./SafeMath16.sol";
 import "./SafeMath8.sol";
 
 contract LotteryNFT is ERC1155, Ownable, Testable {
-    // Libraries 
+    // Libraries
     // Safe math
     using SafeMath for uint256;
     using SafeMath16 for uint16;
     using SafeMath8 for uint8;
 
-    // State variables 
+    // State variables
     address internal lotteryContract_;
 
     uint256 internal totalSupply_;
@@ -30,7 +30,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
         bool claimed;
         uint256 lotteryId;
     }
-    // Token ID => Token information 
+    // Token ID => Token information
     mapping(uint256 => TicketInfo) internal ticketInfo_;
     // User address => Lottery ID => Ticket IDs
     mapping(address => mapping(uint256 => uint256[])) internal userTickets_;
@@ -40,9 +40,9 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
     //-------------------------------------------------------------------------
 
     event InfoBatchMint(
-        address indexed receiving, 
+        address indexed receiving,
         uint256 lotteryId,
-        uint256 amountOfTokens, 
+        uint256 amountOfTokens,
         uint256[] tokenIds
     );
 
@@ -54,10 +54,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
      * @notice  Restricts minting of new tokens to only the lotto contract.
      */
     modifier onlyLotto() {
-        require(
-            msg.sender == lotteryContract_,
-            "Only Lotto can mint"
-        );
+        require(msg.sender == lotteryContract_, "Only Lotto can mint");
         _;
     }
 
@@ -67,21 +64,18 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
 
     /**
      * @param   _uri A dynamic URI that enables individuals to view information
-     *          around their NFT token. To see the information replace the 
+     *          around their NFT token. To see the information replace the
      *          `\{id\}` substring with the actual token type ID. For more info
      *          visit:
      *          https://eips.ethereum.org/EIPS/eip-1155#metadata[defined in the EIP].
      * @param   _lotto The address of the lotto contract. The lotto contract has
-     *          elevated permissions on this contract. 
+     *          elevated permissions on this contract.
      */
     constructor(
         string memory _uri,
         address _lotto,
         address _timer
-    ) 
-    ERC1155(_uri)
-    Testable(_timer)
-    {
+    ) ERC1155(_uri) Testable(_timer) {
         // Only Lotto contract will be able to mint new tokens
         lotteryContract_ = _lotto;
     }
@@ -90,7 +84,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
     // VIEW FUNCTIONS
     //-------------------------------------------------------------------------
 
-    function getTotalSupply() external view returns(uint256) {
+    function getTotalSupply() external view returns (uint256) {
         return totalSupply_;
     }
 
@@ -98,12 +92,10 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
      * @param   _ticketID: The unique ID of the ticket
      * @return  uint32[]: The chosen numbers for that ticket
      */
-    function getTicketNumbers(
-        uint256 _ticketID
-    ) 
-        external 
-        view 
-        returns(uint16[] memory) 
+    function getTicketNumbers(uint256 _ticketID)
+        external
+        view
+        returns (uint16[] memory)
     {
         return ticketInfo_[_ticketID].numbers;
     }
@@ -112,47 +104,36 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
      * @param   _ticketID: The unique ID of the ticket
      * @return  address: Owner of ticket
      */
-    function getOwnerOfTicket(
-        uint256 _ticketID
-    ) 
-        external 
-        view 
-        returns(address) 
+    function getOwnerOfTicket(uint256 _ticketID)
+        external
+        view
+        returns (address)
     {
         return ticketInfo_[_ticketID].owner;
     }
 
-    function getTicketClaimStatus(
-        uint256 _ticketID
-    ) 
-        external 
+    function getTicketClaimStatus(uint256 _ticketID)
+        external
         view
-        returns(bool) 
+        returns (bool)
     {
         return ticketInfo_[_ticketID].claimed;
     }
 
-    function getUserTickets(
-        uint256 _lotteryId,
-        address _user
-    ) 
-        external 
-        view 
-        returns(uint256[] memory) 
+    function getUserTickets(uint256 _lotteryId, address _user)
+        external
+        view
+        returns (uint256[] memory)
     {
         return userTickets_[_user][_lotteryId];
     }
 
     function getUserTicketsPagination(
-        address _user, 
+        address _user,
         uint256 _lotteryId,
-        uint256 cursor, 
+        uint256 cursor,
         uint256 size
-    ) 
-        external 
-        view 
-        returns (uint256[] memory, uint256) 
-    {
+    ) external view returns (uint256[] memory, uint256) {
         uint256 length = size;
         if (length > userTickets_[_user][_lotteryId].length - cursor) {
             length = userTickets_[_user][_lotteryId].length - cursor;
@@ -165,7 +146,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
     }
 
     //-------------------------------------------------------------------------
-    // STATE MODIFYING FUNCTIONS 
+    // STATE MODIFYING FUNCTIONS
     //-------------------------------------------------------------------------
 
     /**
@@ -180,11 +161,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
         uint8 _numberOfTickets,
         uint16[] calldata _numbers,
         uint8 sizeOfLottery
-    )
-        external
-        onlyLotto()
-        returns(uint256[] memory)
-    {
+    ) external onlyLotto returns (uint256[] memory) {
         // Storage for the amount of tokens to mint (always 1)
         uint256[] memory amounts = new uint256[](_numberOfTickets);
         // Storage for the token IDs
@@ -199,7 +176,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
             uint16 end = uint16((i.add(1)).mul(sizeOfLottery));
             // Splitting out the chosen numbers
             uint16[] calldata numbers = _numbers[start:end];
-            // Storing the ticket information 
+            // Storing the ticket information
             ticketInfo_[totalSupply_] = TicketInfo(
                 _to,
                 numbers,
@@ -209,24 +186,18 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
             userTickets_[_to][_lotteryId].push(totalSupply_);
         }
         // Minting the batch of tokens
-        _mintBatch(
-            _to,
-            tokenIds,
-            amounts,
-            msg.data
-        );
+        _mintBatch(_to, tokenIds, amounts, msg.data);
         // Emitting relevant info
-        emit InfoBatchMint(
-            _to, 
-            _lotteryId,
-            _numberOfTickets, 
-            tokenIds
-        ); 
+        emit InfoBatchMint(_to, _lotteryId, _numberOfTickets, tokenIds);
         // Returns the token IDs of minted tokens
         return tokenIds;
     }
 
-    function claimTicket(uint256 _ticketID, uint256 _lotteryId) external onlyLotto() returns(bool) {
+    function claimTicket(uint256 _ticketID, uint256 _lotteryId)
+        external
+        onlyLotto
+        returns (bool)
+    {
         require(
             ticketInfo_[_ticketID].claimed == false,
             "Ticket already claimed"
@@ -237,7 +208,7 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
         );
         uint256 maxRange = ILottery(lotteryContract_).getMaxRange();
         for (uint256 i = 0; i < ticketInfo_[_ticketID].numbers.length; i++) {
-            if(ticketInfo_[_ticketID].numbers[i] > maxRange) {
+            if (ticketInfo_[_ticketID].numbers[i] > maxRange) {
                 return false;
             }
         }
@@ -247,9 +218,6 @@ contract LotteryNFT is ERC1155, Ownable, Testable {
     }
 
     //-------------------------------------------------------------------------
-    // INTERNAL FUNCTIONS 
+    // INTERNAL FUNCTIONS
     //-------------------------------------------------------------------------
-
-
 }
-
