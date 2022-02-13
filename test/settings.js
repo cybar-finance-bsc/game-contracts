@@ -39,16 +39,16 @@ const lotto = {
         win: {
             blankWinningNumbers: "0,0,0,0",
             simpleWinningNumbers: "1,2,3,4",
-            winningNumbers: "18,17,5,3",
-            winningNumbersArr: [18, 17, 5, 3],
+            winningNumbers: "14,15,16,2",
+            winningNumbersArr: [14, 15, 16, 2],
             match_all: ethers.utils.parseUnits("500", 18),
             match_three: ethers.utils.parseUnits("350", 18),
-            match_two: ethers.utils.parseUnits("100", 18),
-            match_one: ethers.utils.parseUnits("5.555555555555555555", 18),
+            match_two: ethers.utils.parseUnits("33.333333333333333333", 18),
+            match_one: ethers.utils.parseUnits("3.846153846153846153", 18),
         }
     },
     chainLink: {
-        keyHash: "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4",
+        dataFeedAddress: "0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4",
         fee: ethers.utils.parseUnits("1", 19)
     },
     events: {
