@@ -291,16 +291,6 @@ contract Lottery is Ownable, Initializable, Testable {
         );
     }
 
-    function closeLottery(uint256 _lotteryId) external onlyOwner {
-        require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Open,
-            "Lottery must be open to close"
-        );
-        allLotteries_[_lotteryId].lotteryStatus = Status.Closed;
-
-        emit LotteryClose(_lotteryId, 0);
-    }
-
     function drawWinningNumbers(uint256 _lotteryId, uint256 _seed)
         external
         onlyOwner
