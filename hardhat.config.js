@@ -21,14 +21,12 @@ module.exports = {
         auto: false,
         interval: 5000
       },
+      forking: {
+        url: "https://rpc.ftm.tools/",
+      },
       blockGasLimit: 13000000,
       gasPrice: 20
     },
-    fantom_testnet: {
-      url: "https://rpc.testnet.fantom.network/",
-      chainId: "0xfa2",
-      accounts: [private_key]
-    }
   },
   solidity: {
     compilers: [
@@ -52,6 +50,15 @@ module.exports = {
       },
       {
         version: "0.7.3",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
+      {
+        version: "0.8.7",
         settings: {
           optimizer: {
             enabled: true,
