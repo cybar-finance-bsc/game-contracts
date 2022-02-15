@@ -1,9 +1,8 @@
 const {
-    lotto,
+    local_lotto,
     lottoNFT,
     BigNumber,
-    generateLottoNumbers
-} = require("../test/settings.js");
+} = require("./settings/lottoDeploySettings.js");
 // The deployment script
 const main = async () => {
     // Creating the users
@@ -50,25 +49,22 @@ const main = async () => {
     // Deploys the contracts
     timerInstance = await timerContract.deploy();
     cybarInstance = await mock_erc20Contract.deploy(
-        lotto.buy.cybar,
+        local_lotto.buy.cybar,
     );
-    // linkInstance = await mock_erc20Contract.deploy(
-    //     lotto.buy.cybar,
-    // );
 
     lotteryInstance = await lotteryContract.deploy(
         cybarInstance.address,
         timerInstance.address,
-        lotto.setup.sizeOfLottery,
-        lotto.setup.maxValidRange,
-        lotto.setup.bucket.one,
-        lotto.setup.bucket.two,
-        lotto.setup.bucketDiscount.one,
-        lotto.setup.bucketDiscount.two,
-        lotto.setup.bucketDiscount.three
+        local_lotto.setup.sizeOfLottery,
+        local_lotto.setup.maxValidRange,
+        local_lotto.setup.bucket.one,
+        local_lotto.setup.bucket.two,
+        local_lotto.setup.bucketDiscount.one,
+        local_lotto.setup.bucketDiscount.two,
+        local_lotto.setup.bucketDiscount.three
     );
     randGenInstance = await randGenContract.deploy(
-        lotto.chainLink.dataFeedAddress, lotteryInstance.address
+        local_lotto.chainLink.dataFeedAddress, lotteryInstance.address
     );
     lotteryNftInstance = await lotteryNftContract.deploy(
         lottoNFT.newLottoNft.uri,
@@ -84,13 +80,8 @@ const main = async () => {
     // Making sure the lottery has some cybar
     await cybarInstance.mint(
         lotteryInstance.address,
-        lotto.newLotto.prize
+        local_lotto.newLotto.prize
     );
-    // // Sending link to lottery
-    // await linkInstance.transfer(
-    //     randGenInstance.address,
-    //     lotto.buy.cybar
-    // );
 
     // Getting the current block timestamp
     let currentTime = await lotteryInstance.getCurrentTime();
@@ -99,11 +90,11 @@ const main = async () => {
 
     // Creating a new lottery
     await lotteryInstance.connect(owner).createNewLotto(
-        lotto.newLotto.distribution,
-        lotto.newLotto.prize,
-        lotto.newLotto.cost,
+        local_lotto.newLotto.distribution,
+        local_lotto.newLotto.prize,
+        local_lotto.newLotto.cost,
         timeStamp.toString(),
-        timeStamp.plus(lotto.newLotto.closeIncrease).toString()
+        timeStamp.plus(local_lotto.newLotto.closeIncrease).toString()
     );
 
     let lottoInfo = await lotteryInstance.getBasicLottoInfo(1)
