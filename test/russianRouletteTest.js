@@ -19,10 +19,6 @@ describe("Russian roulette contract", function () {
     let timerInstance, timerContract;
     // Creating the instance and contract info for the mock rand gen
     let randGenInstance, randGenContract;
-    // Creating the instance and contract of all the contracts needed to mock
-    // the ChainLink contract ecosystem.
-    let linkInstance;
-    let mock_vrfCoordInstance, mock_vrfCoordContract;
 
     // Creating the users
     let owner, buyer;
