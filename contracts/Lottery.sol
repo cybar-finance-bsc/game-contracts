@@ -316,9 +316,9 @@ contract Lottery is Ownable, Initializable, Testable {
         );
         idFirstTicket_ = nft_.getTotalSupply() + 1;
 
-        allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
         // Sets lottery status to closed
         allLotteries_[_lotteryId].lotteryStatus = Status.Closed;
+        allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
         emit LotteryClose(_lotteryId, nft_.getTotalSupply());
         emit LotteryComplete(_lotteryId, nft_.getTotalSupply());
     }
