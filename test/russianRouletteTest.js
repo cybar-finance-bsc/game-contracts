@@ -5,7 +5,7 @@ const {
     russianRouletteNFT,
     BigNumber,
     generateRussianRouletteNumbers
-} = require("./russianRouletteSettings.js");
+} = require("./settings/russianRouletteSettings.js");
 
 describe("Russian roulette contract", function () {
     let mock_erc20Contract;
@@ -43,21 +43,12 @@ describe("Russian roulette contract", function () {
         // Getting the timer code (abi, bytecode, name)
         timerContract = await ethers.getContractFactory("Timer");
         // Getting the ChainLink contracts code (abi, bytecode, name)
-        randGenContract = await ethers.getContractFactory("RandomNumberGeneratorRR");
-        mock_vrfCoordContract = await ethers.getContractFactory("Mock_VRFCoordinator");
+        randGenContract = await ethers.getContractFactory("RNG_Mock");
 
         // Deploying the instances
         timerInstance = await timerContract.deploy();
         cybarInstance = await mock_erc20Contract.deploy(
             russianRoulette.buy.cybar
-        );
-        linkInstance = await mock_erc20Contract.deploy(
-            russianRoulette.buy.cybar
-        );
-        mock_vrfCoordInstance = await mock_vrfCoordContract.deploy(
-            linkInstance.address,
-            russianRoulette.chainLink.keyHash,
-            russianRoulette.chainLink.fee
         );
         russianRouletteInstance = await russianRouletteContract.deploy(
             cybarInstance.address,
@@ -65,11 +56,8 @@ describe("Russian roulette contract", function () {
             russianRoulette.setup.maxValidRange,
         );
         randGenInstance = await randGenContract.deploy(
-            mock_vrfCoordInstance.address,
-            linkInstance.address,
-            russianRouletteInstance.address,
-            russianRoulette.chainLink.keyHash,
-            russianRoulette.chainLink.fee
+            russianRoulette.chainLink.dataFeedAddress,
+            russianRouletteInstance.address
         );
         russianRouletteNftInstance = await russianRouletteNftContract.deploy(
             russianRouletteNFT.newRussianRouletteNft.uri,
@@ -83,10 +71,6 @@ describe("Russian roulette contract", function () {
         await cybarInstance.mint(
             russianRouletteInstance.address,
             russianRoulette.newRussianRoulette.prize
-        );
-        await linkInstance.transfer(
-            randGenInstance.address,
-            russianRoulette.buy.cybar
         );
     });
 
@@ -429,17 +413,9 @@ describe("Russian roulette contract", function () {
             // Setting the time forward 
             await russianRouletteInstance.setCurrentTime(futureTime.toString());
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             // Getting info after call
             let russianRouletteInfoAfter = await russianRouletteInstance.getBasicRussianRouletteInfo(1);
@@ -591,17 +567,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
@@ -666,17 +634,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
@@ -721,17 +681,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             await russianRouletteInstance.setCurrentTime(currentTime.toString());
             // Claiming winnings 
@@ -780,17 +732,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await russianRouletteInstance.getCurrentTime();
@@ -823,17 +767,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await russianRouletteInstance.getCurrentTime();
@@ -899,17 +835,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(2, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await russianRouletteInstance.getCurrentTime();
@@ -997,17 +925,9 @@ describe("Russian roulette contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await russianRouletteNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await russianRouletteInstance.connect(owner).drawWinningNumber(
+            await russianRouletteInstance.connect(owner).drawWinningNumber(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                russianRoulette.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
             // Getting the current block timestamp

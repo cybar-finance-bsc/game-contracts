@@ -114,7 +114,7 @@ contract Lottery is Ownable, Initializable, Testable {
 
     event LotteryClose(uint256 lotteryId, uint256 ticketSupply);
 
-    event LotteryCompleted(uint256 lotteryId, uint256 ticketSupply);
+    event LotteryComplete(uint256 lotteryId, uint256 ticketSupply);
 
     //-------------------------------------------------------------------------
     // MODIFIERS
@@ -302,11 +302,10 @@ contract Lottery is Ownable, Initializable, Testable {
         );
         // Checks lottery numbers have not already been drawn
         require(
-            allLotteries_[_lotteryId].lotteryStatus == Status.Open,
+            allLotteries_[_lotteryId].lotteryStatus != Status.Completed,
             "Lottery State incorrect for draw"
         );
-        // Sets lottery status to closed
-        allLotteries_[_lotteryId].lotteryStatus = Status.Closed;
+
         // Requests a random number from the generator
         uint256 _randomNumber = randomGenerator_.getRandomNumber(_seed);
         allLotteries_[_lotteryId].winningNumbers = _setWinningNumbers(
@@ -318,7 +317,10 @@ contract Lottery is Ownable, Initializable, Testable {
         idFirstTicket_ = nft_.getTotalSupply() + 1;
 
         allLotteries_[_lotteryId].lotteryStatus = Status.Completed;
-        emit LotteryCompleted(_lotteryId, nft_.getTotalSupply());
+        // Sets lottery status to closed
+        allLotteries_[_lotteryId].lotteryStatus = Status.Closed;
+        emit LotteryClose(_lotteryId, nft_.getTotalSupply());
+        emit LotteryComplete(_lotteryId, nft_.getTotalSupply());
     }
 
     /**

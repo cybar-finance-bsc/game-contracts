@@ -5,21 +5,21 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./IRussianRoulette.sol";
+import "./interfaces/IRussianRoulette.sol";
 import "./Testable.sol";
-// Safe math 
+// Safe math
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./SafeMath16.sol";
 import "./SafeMath8.sol";
 
 contract RussianRouletteNFT is ERC1155, Ownable, Testable {
-    // Libraries 
+    // Libraries
     // Safe math
     using SafeMath for uint256;
     using SafeMath16 for uint16;
     using SafeMath8 for uint8;
 
-    // State variables 
+    // State variables
     address internal russianRouletteContract_;
 
     uint256 internal totalSupply_;
@@ -30,7 +30,7 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
         bool claimed;
         uint256 russianRouletteId;
     }
-    // Token ID => Token information 
+    // Token ID => Token information
     mapping(uint256 => TicketInfo) internal ticketInfo_;
     // User address => Russian Roulette ID => Ticket IDs
     mapping(address => mapping(uint256 => uint256[])) internal userTickets_;
@@ -40,9 +40,9 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
     //-------------------------------------------------------------------------
 
     event InfoBatchMint(
-        address indexed receiving, 
+        address indexed receiving,
         uint256 russianRouletteId,
-        uint256 amountOfTokens, 
+        uint256 amountOfTokens,
         uint256[] tokenIds
     );
 
@@ -67,21 +67,18 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
 
     /**
      * @param   _uri A dynamic URI that enables individuals to view information
-     *          around their NFT token. To see the information replace the 
+     *          around their NFT token. To see the information replace the
      *          `\{id\}` substring with the actual token type ID. For more info
      *          visit:
      *          https://eips.ethereum.org/EIPS/eip-1155#metadata[defined in the EIP].
      * @param   _russianRoulette The address of the russian roulette contract. The
-     *          russian roulette contract has elevated permissions on this contract. 
+     *          russian roulette contract has elevated permissions on this contract.
      */
     constructor(
         string memory _uri,
         address _russianRoulette,
         address _timer
-    ) 
-    ERC1155(_uri)
-    Testable(_timer)
-    {
+    ) ERC1155(_uri) Testable(_timer) {
         // Only russian roulette contract will be able to mint new tokens
         russianRouletteContract_ = _russianRoulette;
     }
@@ -90,7 +87,7 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
     // VIEW FUNCTIONS
     //-------------------------------------------------------------------------
 
-    function getTotalSupply() external view returns(uint256) {
+    function getTotalSupply() external view returns (uint256) {
         return totalSupply_;
     }
 
@@ -98,13 +95,7 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
      * @param   _ticketId: The unique ID of the ticket
      * @return  uint8: The chosen number for that ticket
      */
-    function getTicketNumber(
-        uint256 _ticketId
-    ) 
-        external 
-        view 
-        returns(uint8) 
-    {
+    function getTicketNumber(uint256 _ticketId) external view returns (uint8) {
         return ticketInfo_[_ticketId].number;
     }
 
@@ -112,47 +103,36 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
      * @param   _ticketId: The unique ID of the ticket
      * @return  address: Owner of ticket
      */
-    function getOwnerOfTicket(
-        uint256 _ticketId
-    ) 
-        external 
-        view 
-        returns(address) 
+    function getOwnerOfTicket(uint256 _ticketId)
+        external
+        view
+        returns (address)
     {
         return ticketInfo_[_ticketId].owner;
     }
 
-    function getTicketClaimStatus(
-        uint256 _ticketId
-    ) 
-        external 
+    function getTicketClaimStatus(uint256 _ticketId)
+        external
         view
-        returns(bool) 
+        returns (bool)
     {
         return ticketInfo_[_ticketId].claimed;
     }
 
-    function getUserTickets(
-        uint256 _russianRouletteId,
-        address _user
-    ) 
-        external 
-        view 
-        returns(uint256[] memory) 
+    function getUserTickets(uint256 _russianRouletteId, address _user)
+        external
+        view
+        returns (uint256[] memory)
     {
         return userTickets_[_user][_russianRouletteId];
     }
 
     function getUserTicketsPagination(
-        address _user, 
+        address _user,
         uint256 _russianRouletteId,
-        uint256 cursor, 
+        uint256 cursor,
         uint256 size
-    ) 
-        external 
-        view 
-        returns (uint256[] memory, uint256) 
-    {
+    ) external view returns (uint256[] memory, uint256) {
         uint256 length = size;
         if (length > userTickets_[_user][_russianRouletteId].length - cursor) {
             length = userTickets_[_user][_russianRouletteId].length - cursor;
@@ -165,25 +145,21 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
     }
 
     //-------------------------------------------------------------------------
-    // STATE MODIFYING FUNCTIONS 
+    // STATE MODIFYING FUNCTIONS
     //-------------------------------------------------------------------------
 
     /**
      * @param   _to The address being minted to
      * @param   _numberOfTickets The number of NFT's to mint
      * @param   _numbers The numbers for each game of russian roulette
-     * @notice  Only the russian roulette contract is able to mint tokens. 
+     * @notice  Only the russian roulette contract is able to mint tokens.
      */
     function batchMint(
         address _to,
         uint256 _russianRouletteId,
         uint8 _numberOfTickets,
         uint8[] calldata _numbers
-    )
-        external
-        onlyRussianRoulette()
-        returns(uint256[] memory)
-    {
+    ) external onlyRussianRoulette returns (uint256[] memory) {
         // Storage for the amount of tokens to mint (always 1)
         uint256[] memory amounts = new uint256[](_numberOfTickets);
         // Storage for the token IDs
@@ -195,7 +171,7 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
             amounts[i] = 1;
             // Splitting out the chosen numbers
             uint8 number = _numbers[i];
-            // Storing the ticket information 
+            // Storing the ticket information
             ticketInfo_[totalSupply_] = TicketInfo(
                 _to,
                 number,
@@ -205,24 +181,18 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
             userTickets_[_to][_russianRouletteId].push(totalSupply_);
         }
         // Minting the batch of tokens
-        _mintBatch(
-            _to,
-            tokenIds,
-            amounts,
-            msg.data
-        );
+        _mintBatch(_to, tokenIds, amounts, msg.data);
         // Emitting relevant info
-        emit InfoBatchMint(
-            _to, 
-            _russianRouletteId,
-            _numberOfTickets, 
-            tokenIds
-        ); 
+        emit InfoBatchMint(_to, _russianRouletteId, _numberOfTickets, tokenIds);
         // Returns the token IDs of minted tokens
         return tokenIds;
     }
 
-    function claimTicket(uint256 _ticketId, uint256 _russianRouletteId) external onlyRussianRoulette() returns(bool) {
+    function claimTicket(uint256 _ticketId, uint256 _russianRouletteId)
+        external
+        onlyRussianRoulette
+        returns (bool)
+    {
         require(
             ticketInfo_[_ticketId].claimed == false,
             "Ticket already claimed"
@@ -231,8 +201,9 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
             ticketInfo_[_ticketId].russianRouletteId == _russianRouletteId,
             "Ticket not for this russian roulette game"
         );
-        uint256 maxRange = IRussianRoulette(russianRouletteContract_).getMaxRange();
-        if(ticketInfo_[_ticketId].number > maxRange){
+        uint256 maxRange = IRussianRoulette(russianRouletteContract_)
+            .getMaxRange();
+        if (ticketInfo_[_ticketId].number > maxRange) {
             return false;
         }
 
@@ -241,9 +212,6 @@ contract RussianRouletteNFT is ERC1155, Ownable, Testable {
     }
 
     //-------------------------------------------------------------------------
-    // INTERNAL FUNCTIONS 
+    // INTERNAL FUNCTIONS
     //-------------------------------------------------------------------------
-
-
 }
-

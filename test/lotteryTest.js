@@ -6,7 +6,7 @@ const {
     BigNumber,
     generateLottoNumbers,
     generateFixedLottoNumbers
-} = require("./settings.js");
+} = require("./settings/lottoSettings");
 
 describe("Lottery contract", function () {
     let mock_erc20Contract;
@@ -23,7 +23,6 @@ describe("Lottery contract", function () {
     // Creating the instance and contract of all the contracts needed to mock
     // the ChainLink contract ecosystem. 
     let linkInstance;
-    let mock_vrfCoordInstance, mock_vrfCoordContract;
 
     // Creating the users
     let owner, buyer;
@@ -43,22 +42,16 @@ describe("Lottery contract", function () {
         mock_erc20Contract = await ethers.getContractFactory("Mock_erc20");
         // Getting the timer code (abi, bytecode, name)
         timerContract = await ethers.getContractFactory("Timer");
+        // // Getting the ChainLink contracts code (abi, bytecode, name)
+        // randGenContract = await ethers.getContractFactory("RandomNumberGenerator");
         // Getting the ChainLink contracts code (abi, bytecode, name)
-        randGenContract = await ethers.getContractFactory("RandomNumberGenerator");
-        mock_vrfCoordContract = await ethers.getContractFactory("Mock_VRFCoordinator");
+        randGenContract = await ethers.getContractFactory("RNG_Mock");
+
 
         // Deploying the instances
         timerInstance = await timerContract.deploy();
         cybarInstance = await mock_erc20Contract.deploy(
             lotto.buy.cybar,
-        );
-        linkInstance = await mock_erc20Contract.deploy(
-            lotto.buy.cybar,
-        );
-        mock_vrfCoordInstance = await mock_vrfCoordContract.deploy(
-            linkInstance.address,
-            lotto.chainLink.keyHash,
-            lotto.chainLink.fee
         );
         lotteryInstance = await lotteryContract.deploy(
             cybarInstance.address,
@@ -72,11 +65,8 @@ describe("Lottery contract", function () {
             lotto.setup.bucketDiscount.three
         );
         randGenInstance = await randGenContract.deploy(
-            mock_vrfCoordInstance.address,
-            linkInstance.address,
-            lotteryInstance.address,
-            lotto.chainLink.keyHash,
-            lotto.chainLink.fee
+            lotto.chainLink.dataFeedAddress,
+            lotteryInstance.address
         );
         lotteryNftInstance = await lotteryNftContract.deploy(
             lottoNFT.newLottoNft.uri,
@@ -91,11 +81,6 @@ describe("Lottery contract", function () {
         await cybarInstance.mint(
             lotteryInstance.address,
             lotto.newLotto.prize
-        );
-        // Sending link to lottery
-        await linkInstance.transfer(
-            randGenInstance.address,
-            lotto.buy.cybar
         );
     });
 
@@ -510,14 +495,6 @@ describe("Lottery contract", function () {
                 1,
                 1234
             )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
-            );
             // Getting info after call
             let lotteryInfoAfter = await lotteryInstance.getBasicLottoInfo(1);
             // Testing
@@ -552,32 +529,32 @@ describe("Lottery contract", function () {
                 )
             ).to.be.revertedWith(lotto.errors.invalid_admin);
         });
-        /**
-         * Testing that numbers cannot be updated once chosen
-         */
-        it("Invalid winning numbers (already chosen)", async function () {
-            // Setting the time so that we can set winning numbers
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Getting the timestamp for invalid time for buying
-            let futureTime = timeStamp.plus(lotto.newLotto.closeIncrease);
-            // Setting the time forward 
-            await lotteryInstance.setCurrentTime(futureTime.toString());
-            // Drawing the numbers
-            await lotteryInstance.connect(owner).drawWinningNumbers(
-                1,
-                1234
-            );
-            // Drawing the numbers again
-            await expect(
-                lotteryInstance.connect(owner).drawWinningNumbers(
-                    1,
-                    1234
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_draw_repeat);
-        });
+        // /**
+        //  * Testing that numbers cannot be updated once chosen
+        //  */
+        // it("Invalid winning numbers (already chosen)", async function () {
+        //     // Setting the time so that we can set winning numbers
+        //     // Getting the current block timestamp
+        //     let currentTime = await lotteryInstance.getCurrentTime();
+        //     // Converting to a BigNumber for manipulation 
+        //     let timeStamp = new BigNumber(currentTime.toString());
+        //     // Getting the timestamp for invalid time for buying
+        //     let futureTime = timeStamp.plus(lotto.newLotto.closeIncrease);
+        //     // Setting the time forward 
+        //     await lotteryInstance.setCurrentTime(futureTime.toString());
+        //     // Drawing the numbers
+        //     await lotteryInstance.connect(owner).drawWinningNumbers(
+        //         1,
+        //         1234
+        //     );
+        //     // Drawing the numbers again
+        //     await expect(
+        //         lotteryInstance.connect(owner).drawWinningNumbers(
+        //             1,
+        //             1234
+        //         )
+        //     ).to.be.revertedWith(lotto.errors.invalid_draw_repeat);
+        // });
         /**
          * Testing that winning numbers cannot be set while lottery still in 
          * progress
@@ -591,7 +568,6 @@ describe("Lottery contract", function () {
             ).to.be.revertedWith(lotto.errors.invalid_draw_time);
         });
     });
-
     describe("Claiming tickets tests", function () {
         beforeEach(async () => {
             // Getting the current block timestamp
@@ -672,32 +648,10 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
-            let lottoInfo = await lotteryInstance.getBasicLottoInfo(1);
-            // console.log("Number distribution");
-            lottoInfo.numberDistribution.forEach(element => console.log(element.toString()));
-            let userTicketNumbers = await lotteryNftInstance.getTicketNumbers(51);
-            // console.log(userTicketNumbers);
-            // console.log(lottoInfo.winningNumbers);
-            let totalSupply = await lotteryNftInstance.getTotalSupply();
-            // console.log(totalSupply.toString());
-            // for (let i = 0; i <= totalSupply; i++) {
-            //     userTicketNumbers = await lotteryNftInstance.getTicketNumbers(i);
-            //     console.log(userTicketNumbers);
-            // }
-            // userTicketNumbers = await lotteryNftInstance.getTicketNumbers(0);
-            // console.log(userTicketNumbers);
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
             // Getting the current block timestamp
@@ -764,20 +718,11 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
-
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
             // Converting to a BigNumber for manipulation 
@@ -843,17 +788,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
@@ -923,17 +860,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
@@ -1004,17 +933,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
 
@@ -1059,18 +980,11 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
+            // set timer
             await lotteryInstance.setCurrentTime(currentTime.toString());
             // Claiming winnings 
             await expect(
@@ -1118,17 +1032,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -1161,17 +1067,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -1229,17 +1127,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -1302,17 +1192,9 @@ describe("Lottery contract", function () {
             // Getting all users bought tickets
             let userTicketIds = await lotteryNftInstance.getUserTickets(2, buyer.address);
             // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
+            await lotteryInstance.connect(owner).drawWinningNumbers(
                 1,
                 1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
             );
             // Getting the current block timestamp
             currentTime = await lotteryInstance.getCurrentTime();
@@ -1328,894 +1210,6 @@ describe("Lottery contract", function () {
                     userTicketIds[0].toString()
                 )
             ).to.be.revertedWith(lotto.errors.invalid_claim_lottery);
-        });
-    });
-
-    describe("Batch claiming tickets tests", function () {
-        beforeEach(async () => {
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
-            await lotteryInstance.connect(owner).createNewLotto(
-                lotto.newLotto.distribution,
-                lotto.newLotto.prize,
-                lotto.newLotto.cost,
-                timeStamp.toString(),
-                timeStamp.plus(lotto.newLotto.closeIncrease).toString()
-            );
-            // Buying tickets
-            // Getting the price to buy
-            let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                49
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(owner).transfer(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 49,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                49,
-                ticketNumbers
-            );
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                1
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(owner).transfer(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                1,
-                lotto.newLotto.win.winningNumbersArr
-            );
-            // Setting current time so that drawing is correct
-            // Getting the current block timestamp
-            currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            timeStamp = new BigNumber(currentTime.toString());
-            // Getting the timestamp for invalid time for buying
-            let futureTime = timeStamp.plus(lotto.newLotto.closeIncrease);
-            // Setting the time forward 
-            await lotteryInstance.setCurrentTime(futureTime.toString());
-        });
-
-        it("Batch claiming winning numbers (multiple match)", async function () {
-            // Getting all users bought tickets
-            let userTicketIds = await lotteryNftInstance.getUserTickets(1, buyer.address);
-            // Drawing the numbers
-            let tx = await (await lotteryInstance.connect(owner).drawWinningNumbers(
-                1,
-                1234
-            )).wait();
-            // Getting the request ID out of events
-            let requestId = tx.events[0].args.requestId.toString();
-            // Mocking the VRF Coordinator contract for random request fulfilment 
-            await mock_vrfCoordInstance.connect(owner).callBackWithRandomness(
-                requestId,
-                lotto.draw.random,
-                randGenInstance.address
-            );
-            let buyerCybarBalanceBefore = await cybarInstance.balanceOf(buyer.address);
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            let futureEndTime = timeStamp.plus(lotto.newLotto.closeIncrease);
-            // Setting the time forward 
-            await lotteryInstance.setCurrentTime(futureEndTime.toString());
-            // Claiming winnings 
-            await lotteryInstance.connect(buyer).batchClaimRewards(
-                1,
-                userTicketIds
-            );
-            let buyerCybarBalanceAfter = await cybarInstance.balanceOf(buyer.address);
-            // Tests
-            assert.equal(
-                buyerCybarBalanceBefore.toString(),
-                0,
-                "Buyer has cybar balance before claiming"
-            );
-            assert.notEqual(
-                buyerCybarBalanceAfter.toString(),
-                buyerCybarBalanceBefore.toString(),
-                "User balance has not changed"
-            );
-            assert.notEqual(
-                buyerCybarBalanceAfter.toString(),
-                lotto.newLotto.win.match_all.toString(),
-                "User won incorrect amount"
-            );
-        });
-    });
-
-    describe("Upgrade functionality tests", function () {
-        /**
-         * Tests that an admin can update the size of a lottery
-         */
-        it("Update size of lottery", async function () {
-            // Getting the size of the lottery
-            let sizeOfLottery = await lotteryInstance.sizeOfLottery_();
-            // Updating the size of the lottery
-            await lotteryInstance.updateSizeOfLottery(lotto.update.sizeOfLottery);
-            // Getting the size of the lottery after the update
-            let sizeOfLotteryAfter = await lotteryInstance.sizeOfLottery_();
-            // Testing
-            assert.equal(
-                sizeOfLottery.toString(),
-                lotto.setup.sizeOfLottery,
-                "Start size incorrect"
-            );
-            assert.equal(
-                sizeOfLotteryAfter.toString(),
-                lotto.update.sizeOfLottery,
-                "Start incorrect after update"
-            );
-        });
-        /**
-         * Tests that size cannot be updated to current size
-         */
-        it("Invalid update size of lottery (same as current)", async function () {
-            // Getting the size of the lottery
-            let sizeOfLottery = await lotteryInstance.sizeOfLottery_();
-            // Updating the size of the lottery
-            await expect(
-                lotteryInstance.updateSizeOfLottery(sizeOfLottery.toString())
-            ).to.be.revertedWith(lotto.errors.invalid_size_update_duplicate);
-        });
-        /**
-         * Tests that a non owner cannot change the size of a lottery
-         */
-        it("Invalid update size of lottery (non-owner)", async function () {
-            // Updating the size of the lottery
-            await expect(
-                lotteryInstance.connect(buyer).updateSizeOfLottery(
-                    lotto.update.sizeOfLottery
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_admin);
-        });
-        /**
-         * Tests that an admin can update the max range of numbers
-         */
-        it("Update range of numbers", async function () {
-            // Getting the range
-            let maxRange = await lotteryInstance.maxValidRange_();
-            // Updating range
-            await lotteryInstance.connect(owner).updateMaxRange(
-                lotto.update.maxValidRange
-            );
-            // Getting the range after
-            let maxRangeAfter = await lotteryInstance.maxValidRange_();
-            // Testing
-            assert.equal(
-                maxRange.toString(),
-                lotto.setup.maxValidRange,
-                "Max range incorrect before update"
-            );
-            assert.equal(
-                maxRangeAfter.toString(),
-                lotto.update.maxValidRange,
-                "Max range incorrect after update"
-            );
-        });
-        /**
-         * Tests that max range cannot be updated to current range
-         */
-        it("Invalid update size of lottery (same as current)", async function () {
-            // Updating range
-            await expect(
-                lotteryInstance.connect(owner).updateMaxRange(
-                    lotto.setup.maxValidRange
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_size_update_duplicate);
-        });
-        /**
-         * Tests that a non owner cannot change the max range
-         */
-        it("Invalid update size of lottery (non-owner)", async function () {
-            // Updating the size of the lottery
-            await expect(
-                lotteryInstance.connect(buyer).updateMaxRange(
-                    lotto.setup.maxValidRange
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_admin);
-        });
-
-        it("Update buckets", async function () {
-            // Getting the size of the lottery
-            let bucketOne = await lotteryInstance.bucketOneMax_();
-            let bucketTwo = await lotteryInstance.bucketTwoMax_();
-            let disBucketOne = await lotteryInstance.discountForBucketOne_();
-            let disBucketTwo = await lotteryInstance.discountForBucketTwo_();
-            let disBucketThree = await lotteryInstance.discountForBucketThree_();
-            // Updating the size of the lottery
-            await lotteryInstance.connect(owner).updateBuckets(
-                lotto.update.bucket.one,
-                lotto.update.bucket.two,
-                lotto.update.bucketDiscount.one,
-                lotto.update.bucketDiscount.two,
-                lotto.update.bucketDiscount.three
-            );
-            // Getting the size of the lottery after the update
-            let bucketOneAfter = await lotteryInstance.bucketOneMax_();
-            let bucketTwoAfter = await lotteryInstance.bucketTwoMax_();
-            let disBucketOneAfter = await lotteryInstance.discountForBucketOne_();
-            let disBucketTwoAfter = await lotteryInstance.discountForBucketTwo_();
-            let disBucketThreeAfter = await lotteryInstance.discountForBucketThree_();
-            // Testing
-            assert.equal(
-                bucketOne.toString(),
-                lotto.setup.bucket.one,
-                "Bucket one incorrect"
-            );
-            assert.equal(
-                bucketOneAfter.toString(),
-                lotto.update.bucket.one,
-                "Bucket one incorrect"
-            );
-            assert.equal(
-                bucketTwo.toString(),
-                lotto.setup.bucket.two,
-                "Bucket two incorrect"
-            );
-            assert.equal(
-                bucketTwoAfter.toString(),
-                lotto.update.bucket.two,
-                "Bucket two incorrect"
-            );
-            assert.equal(
-                disBucketOne.toString(),
-                lotto.setup.bucketDiscount.one,
-                "Bucket one discount incorrect"
-            );
-            assert.equal(
-                disBucketOneAfter.toString(),
-                lotto.update.bucketDiscount.one,
-                "Bucket one discount incorrect"
-            );
-            assert.equal(
-                disBucketTwo.toString(),
-                lotto.setup.bucketDiscount.two,
-                "Bucket two discount incorrect"
-            );
-            assert.equal(
-                disBucketTwoAfter.toString(),
-                lotto.update.bucketDiscount.two,
-                "Bucket two discount incorrect"
-            );
-            assert.equal(
-                disBucketThree.toString(),
-                lotto.setup.bucketDiscount.three,
-                "Bucket three discount incorrect"
-            );
-            assert.equal(
-                disBucketThreeAfter.toString(),
-                lotto.update.bucketDiscount.three,
-                "Bucket three discount incorrect"
-            );
-        });
-
-        it("Invalid bucket update (non owner)", async function () {
-            await expect(
-                lotteryInstance.connect(buyer).updateBuckets(
-                    lotto.update.bucket.one,
-                    lotto.update.bucket.two,
-                    lotto.update.bucketDiscount.one,
-                    lotto.update.bucketDiscount.two,
-                    lotto.update.bucketDiscount.three
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_admin);
-        });
-
-        it("Invalid bucket update (max 0)", async function () {
-            await expect(
-                lotteryInstance.connect(owner).updateBuckets(
-                    lotto.errorData.bucket,
-                    lotto.update.bucket.two,
-                    lotto.update.bucketDiscount.one,
-                    lotto.update.bucketDiscount.two,
-                    lotto.update.bucketDiscount.three
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_bucket_range);
-            await expect(
-                lotteryInstance.connect(owner).updateBuckets(
-                    lotto.update.bucket.one,
-                    lotto.errorData.bucket,
-                    lotto.update.bucketDiscount.one,
-                    lotto.update.bucketDiscount.two,
-                    lotto.update.bucketDiscount.three
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_bucket_range);
-        });
-
-        it("Invalid bucket update (discount increase)", async function () {
-            await expect(
-                lotteryInstance.connect(owner).updateBuckets(
-                    lotto.update.bucket.one,
-                    lotto.update.bucket.two,
-                    lotto.update.bucketDiscount.two,
-                    lotto.update.bucketDiscount.one,
-                    lotto.update.bucketDiscount.three
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_bucket_discount);
-            await expect(
-                lotteryInstance.connect(owner).updateBuckets(
-                    lotto.update.bucket.one,
-                    lotto.update.bucket.two,
-                    lotto.update.bucketDiscount.one,
-                    lotto.update.bucketDiscount.three,
-                    lotto.update.bucketDiscount.two,
-                )
-            ).to.be.revertedWith(lotto.errors.invalid_bucket_discount);
-        });
-
-        it("Withdraw excess cybar", async function () {
-            let ownerCybarBalance = await cybarInstance.balanceOf(owner.address);
-            let lotteryCybarBalance = await cybarInstance.balanceOf(lotteryInstance.address);
-            await lotteryInstance.connect(owner).withdrawCybar(lotteryCybarBalance);
-            let ownerCybarBalanceAfter = await cybarInstance.balanceOf(owner.address);
-            let lotteryCybarBalanceAfter = await cybarInstance.balanceOf(lotteryInstance.address);
-            // Tests
-            assert.notEqual(
-                ownerCybarBalance.toString(),
-                ownerCybarBalanceAfter.toString(),
-                "Owner cybar balance did not change"
-            );
-            assert.notEqual(
-                lotteryCybarBalance.toString(),
-                lotteryCybarBalanceAfter.toString(),
-                "Lottery balance did not change"
-            );
-            assert.equal(
-                lotteryCybarBalanceAfter.toString(),
-                0,
-                "Lottery has not been drained"
-            );
-        });
-
-        it("Invalid withdraw excess cybar (non owner)", async function () {
-            let lotteryCybarBalance = await cybarInstance.balanceOf(lotteryInstance.address);
-            await expect(
-                lotteryInstance.connect(buyer).withdrawCybar(lotteryCybarBalance)
-            ).to.be.revertedWith(lotto.errors.invalid_admin);
-        });
-    });
-
-    describe("View function tests", function () {
-        it("Get Lotto discount", async function () {
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
-            await lotteryInstance.connect(owner).createNewLotto(
-                lotto.newLotto.distribution,
-                lotto.newLotto.prize,
-                lotto.newLotto.cost,
-                timeStamp.toString(),
-                timeStamp.plus(lotto.newLotto.closeIncrease).toString()
-            );
-
-            let pricesBucketOne = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                10
-            );
-            let pricesBucketTwo = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                35
-            );
-            let pricesBucketThree = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                51
-            );
-            assert.equal(
-                pricesBucketOne[0].toString(),
-                lotto.discount.ten.cost,
-                "Cost for buy of 10 incorrect"
-            );
-            assert.equal(
-                pricesBucketOne[1].toString(),
-                lotto.discount.ten.discount,
-                "Discount for buy of 10 incorrect"
-            );
-            assert.equal(
-                pricesBucketOne[2].toString(),
-                lotto.discount.ten.discountCost,
-                "Discount cost for buy of 10 incorrect"
-            );
-            assert.equal(
-                pricesBucketTwo[0].toString(),
-                lotto.discount.thirty_five.cost,
-                "Cost for buy of 35 incorrect"
-            );
-            assert.equal(
-                pricesBucketTwo[1].toString(),
-                lotto.discount.thirty_five.discount,
-                "Discount for buy of 35 incorrect"
-            );
-            assert.equal(
-                pricesBucketTwo[2].toString(),
-                lotto.discount.thirty_five.discountCost,
-                "Discount cost for buy of 35 incorrect"
-            );
-            assert.equal(
-                pricesBucketThree[0].toString(),
-                lotto.discount.fifty_one.cost,
-                "Cost for buy of 55 incorrect"
-            );
-            assert.equal(
-                pricesBucketThree[1].toString(),
-                lotto.discount.fifty_one.discount,
-                "Discount for buy of 55 incorrect"
-            );
-            assert.equal(
-                pricesBucketThree[2].toString(),
-                lotto.discount.fifty_one.discountCost,
-                "Discount cost for buy of 55 incorrect"
-            );
-        });
-
-        it("Get Lotto Info", async function () {
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
-            await lotteryInstance.connect(owner).createNewLotto(
-                lotto.newLotto.distribution,
-                lotto.newLotto.prize,
-                lotto.newLotto.cost,
-                timeStamp.toString(),
-                timeStamp.plus(lotto.newLotto.closeIncrease).toString()
-            );
-            // Getting the basic info around this lottery
-            let lottoInfo = await lotteryInstance.getBasicLottoInfo(1);
-            // Testing they are correct
-            assert.equal(
-                lottoInfo.prizeDistribution.toString(),
-                lotto.newLotto.distribution.toString(),
-                "Invalid distribution"
-            );
-            assert.equal(
-                lottoInfo.prizePoolInCybar.toString(),
-                lotto.newLotto.prize.toString(),
-                "Invalid prize pool"
-            );
-            assert.equal(
-                lottoInfo.costPerTicket.toString(),
-                lotto.newLotto.cost,
-                "Invalid cost per token"
-            );
-            assert.equal(
-                lottoInfo.startingTimestamp.toString(),
-                timeStamp.toString(),
-                "Invalid starting time"
-            );
-            assert.equal(
-                lottoInfo.closingTimestamp.toString(),
-                timeStamp.plus(lotto.newLotto.closeIncrease).toString(),
-                "Invalid starting time"
-            );
-        });
-
-        it("Get User Tickets", async function () {
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
-            await lotteryInstance.connect(owner).createNewLotto(
-                lotto.newLotto.distribution,
-                lotto.newLotto.prize,
-                lotto.newLotto.cost,
-                timeStamp.toString(),
-                timeStamp.plus(lotto.newLotto.closeIncrease).toString()
-            );
-            // Buying tickets
-            // Getting the price to buy
-            let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-
-            let tickets = await lotteryNftInstance.getUserTicketsPagination(
-                buyer.address,
-                1,
-                0,
-                50
-            );
-            let ticketsTwo = await lotteryNftInstance.getUserTicketsPagination(
-                buyer.address,
-                1,
-                50,
-                50
-            );
-            let userTickets = await lotteryNftInstance.getUserTickets(
-                1,
-                buyer.address
-            );
-            let allTickets = [...tickets[0], ...ticketsTwo[0]];
-
-            assert.equal(
-                userTickets[99].toString(),
-                allTickets[99].toString(),
-                "Tickets are not equal from both view functions"
-            );
-        });
-
-        it("Get User Tickets", async function () {
-            // Getting the current block timestamp
-            let currentTime = await lotteryInstance.getCurrentTime();
-            // Converting to a BigNumber for manipulation 
-            let timeStamp = new BigNumber(currentTime.toString());
-            // Creating a new lottery
-            await lotteryInstance.connect(owner).createNewLotto(
-                lotto.newLotto.distribution,
-                lotto.newLotto.prize,
-                lotto.newLotto.cost,
-                timeStamp.toString(),
-                timeStamp.plus(lotto.newLotto.closeIncrease).toString()
-            );
-            // Buying tickets
-            // Getting the price to buy
-            let prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            let ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            // Getting the price to buy
-            prices = await lotteryInstance.costToBuyTicketsWithDiscount(
-                1,
-                50
-            );
-            // Sending the buyer the needed amount of cybar
-            await cybarInstance.connect(buyer).mint(
-                buyer.address,
-                prices[2]
-            );
-            // Approving lotto to spend cost
-            await cybarInstance.connect(buyer).approve(
-                lotteryInstance.address,
-                prices[2]
-            );
-            // Generating chosen numbers for buy
-            ticketNumbers = generateLottoNumbers({
-                numberOfTickets: 50,
-                lottoSize: lotto.setup.sizeOfLottery,
-                maxRange: lotto.setup.maxValidRange
-            });
-            // Batch buying tokens
-            await lotteryInstance.connect(buyer).batchBuyLottoTicket(
-                1,
-                50,
-                ticketNumbers
-            );
-
-            let userInfo = await lotteryNftInstance.getUserTickets(
-                1,
-                buyer.address
-            );
         });
     });
 });

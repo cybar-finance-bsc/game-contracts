@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.6.0;
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "hardhat/console.sol";
+// Inherited allowing for ownership of contract
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract RandomNumberGenerator {
+contract RandomNumberGenerator is Ownable {
     AggregatorV3Interface internal priceFeed;
     address public lottery;
 
@@ -18,7 +21,7 @@ contract RandomNumberGenerator {
      * Mainnet-Address: 0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4
      * Testnet-Address: 0x65E8d79f3e8e36fE48eC31A2ae935e92F5bBF529
      */
-    constructor(address _aggregatorInterface, address _lottery) {
+    constructor(address _aggregatorInterface, address _lottery) public {
         priceFeed = AggregatorV3Interface(_aggregatorInterface);
         lottery = _lottery;
     }
@@ -28,6 +31,7 @@ contract RandomNumberGenerator {
      */
     function getRandomNumber(uint256 userProvidedSeed)
         public
+        view
         onlyLottery
         returns (uint256)
     {
@@ -49,7 +53,7 @@ contract RandomNumberGenerator {
                 userProvidedSeed
             )
         );
-        // Casts random number hash into uint256
-        return uint256(hashOfRandom);
+        uint256 randomNumber = uint256(hashOfRandom);
+        return randomNumber;
     }
 }

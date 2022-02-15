@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
 // Inherited allowing for ownership of contract
 import "@openzeppelin/contracts/access/Ownable.sol";
 // Allows for intergration with ChainLink VRF
-import "./IRandomNumberGenerator.sol";
+import "./interfaces/IRandomNumberGenerator.sol";
 // Interface for Russian Roulette NFT to mint tokens
-import "./IRussianRouletteNFT.sol";
+import "./interfaces/IRussianRouletteNFT.sol";
 // Allows for time manipulation. Set to 0x address on test/mainnet deploy
 import "./Testable.sol";
 // Safe math
@@ -86,6 +86,11 @@ contract RussianRoulette is Ownable, Initializable, Testable {
     event RussianRouletteOpen(uint256 russianRouletteId, uint256 ticketSupply);
 
     event RussianRouletteClose(uint256 russianRouletteId, uint256 ticketSupply);
+
+    event RussianRouletteComplete(
+        uint256 russianRouletteId,
+        uint256 ticketSupply
+    );
 
     //-------------------------------------------------------------------------
     // MODIFIERS
@@ -185,41 +190,23 @@ contract RussianRoulette is Ownable, Initializable, Testable {
         );
         // Checks russian roulette number have not already been drawn
         require(
-            allRussianRoulettes[_russianRouletteId].russianRouletteStatus ==
-                Status.Open,
+            allRussianRoulettes[_russianRouletteId].russianRouletteStatus !=
+                Status.Completed,
             "Russian Roulette State incorrect for draw"
         );
         // Sets russian roulette status to closed
         allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status
             .Closed;
         // Requests a random number from the generator
-        requestId_ = randomGenerator_.getRandomNumber(
-            _russianRouletteId,
-            _seed
-        );
-        // Emits that random number has been requested
-        emit RequestNumber(_russianRouletteId, requestId_);
-    }
+        uint256 _randomNumber = randomGenerator_.getRandomNumber(_seed);
 
-    function numberDrawn(
-        uint256 _russianRouletteId,
-        bytes32 _requestId,
-        uint256 _randomNumber
-    ) external onlyRandomGenerator {
-        require(
-            allRussianRoulettes[_russianRouletteId].russianRouletteStatus ==
-                Status.Closed,
-            "Draw number first"
+        allRussianRoulettes[_russianRouletteId].winningNumber = _cast(
+            _randomNumber
         );
-        if (requestId_ == _requestId) {
-            allRussianRoulettes[_russianRouletteId]
-                .russianRouletteStatus = Status.Completed;
-            allRussianRoulettes[_russianRouletteId].winningNumber = _cast(
-                _randomNumber
-            );
-        }
-
+        allRussianRoulettes[_russianRouletteId].russianRouletteStatus = Status
+            .Completed;
         emit RussianRouletteClose(_russianRouletteId, nft_.getTotalSupply());
+        emit RussianRouletteComplete(_russianRouletteId, nft_.getTotalSupply());
     }
 
     /**
@@ -488,12 +475,7 @@ contract RussianRoulette is Ownable, Initializable, Testable {
     }
 
     function _cast(uint256 _randomNumber) internal view returns (uint8) {
-        // Encodes the random number with its position in loop
-        bytes32 hashOfRandom = keccak256(abi.encodePacked(_randomNumber));
-        // Casts random number hash into uint256
-        uint256 numberRepresentation = uint256(hashOfRandom);
-        // Casting the uint256 to the desired interval
-        uint8 winningNumber = uint8(numberRepresentation.mod(maxValidRange_));
+        uint8 winningNumber = uint8(_randomNumber.mod(maxValidRange_));
         return winningNumber;
     }
 }

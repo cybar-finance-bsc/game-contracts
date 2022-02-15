@@ -35,7 +35,6 @@ const main = async () => {
     // Creating the instance and contract of all the contracts needed to mock
     // the ChainLink contract ecosystem. 
     let linkInstance;
-    let mock_vrfCoordInstance, mock_vrfCoordContract;
 
     // Getting the lottery code (abi, bytecode, name)
     lotteryContract = await ethers.getContractFactory("Lottery");
@@ -47,21 +46,16 @@ const main = async () => {
     timerContract = await ethers.getContractFactory("Timer");
     // Getting the ChainLink contracts code (abi, bytecode, name)
     randGenContract = await ethers.getContractFactory("RandomNumberGenerator");
-    mock_vrfCoordContract = await ethers.getContractFactory("Mock_VRFCoordinator");
 
     // Deploys the contracts
     timerInstance = await timerContract.deploy();
     cybarInstance = await mock_erc20Contract.deploy(
         lotto.buy.cybar,
     );
-    linkInstance = await mock_erc20Contract.deploy(
-        lotto.buy.cybar,
-    );
-    mock_vrfCoordInstance = await mock_vrfCoordContract.deploy(
-        linkInstance.address,
-        lotto.chainLink.keyHash,
-        lotto.chainLink.fee
-    );
+    // linkInstance = await mock_erc20Contract.deploy(
+    //     lotto.buy.cybar,
+    // );
+
     lotteryInstance = await lotteryContract.deploy(
         cybarInstance.address,
         timerInstance.address,
@@ -74,11 +68,7 @@ const main = async () => {
         lotto.setup.bucketDiscount.three
     );
     randGenInstance = await randGenContract.deploy(
-        mock_vrfCoordInstance.address,
-        linkInstance.address,
-        lotteryInstance.address,
-        lotto.chainLink.keyHash,
-        lotto.chainLink.fee
+        lotto.chainLink.dataFeedAddress, lotteryInstance.address
     );
     lotteryNftInstance = await lotteryNftContract.deploy(
         lottoNFT.newLottoNft.uri,
@@ -96,11 +86,11 @@ const main = async () => {
         lotteryInstance.address,
         lotto.newLotto.prize
     );
-    // Sending link to lottery
-    await linkInstance.transfer(
-        randGenInstance.address,
-        lotto.buy.cybar
-    );
+    // // Sending link to lottery
+    // await linkInstance.transfer(
+    //     randGenInstance.address,
+    //     lotto.buy.cybar
+    // );
 
     // Getting the current block timestamp
     let currentTime = await lotteryInstance.getCurrentTime();

@@ -1,5 +1,6 @@
 const { ethers } = require("ethers");
 const { BigNumber } = require("bignumber.js");
+var seedrandom = require('seedrandom');
 
 const russianRoulette = {
     setup: {
@@ -15,14 +16,14 @@ const russianRoulette = {
         endIncrease: 20000,
         win: {
             blankWinningNumber: "0",
-            afterWinningNumber: "2",
-            winningNumber: ["2"],
+            afterWinningNumber: "4",
+            winningNumber: ["4"],
             loosingNumber: ["3"],
             winPrize: ethers.utils.parseUnits("500", 18),
         }
     },
     chainLink: {
-        keyHash: "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4",
+        dataFeedAddress: "0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4",
         fee: ethers.utils.parseUnits("1", 19)
     },
     events: {
@@ -109,4 +110,3 @@ module.exports = {
     BigNumber,
     generateRussianRouletteNumbers
 }
-
