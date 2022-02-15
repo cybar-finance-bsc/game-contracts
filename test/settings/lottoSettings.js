@@ -164,7 +164,6 @@ function generateFixedLottoNumbers({
 module.exports = {
     lotto,
     lottoNFT,
-    RNG,
     BigNumber,
     generateLottoNumbers,
     generateFixedLottoNumbers,
