@@ -23,6 +23,8 @@ module.exports = {
       },
       forking: {
         url: "https://rpc.ftm.tools/",
+        // fix mainnet fork to block number
+        blockNumber: 31066843,
       },
       blockGasLimit: 13000000,
       gasPrice: 20
