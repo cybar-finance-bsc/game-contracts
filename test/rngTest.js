@@ -58,7 +58,7 @@ describe("RandomNumberGenerator contract", function () {
                     .getRandomNumber(RNG.test_setup.userSeed.seedOne)
             ).to.be.revertedWith(RNG.errors.wrong_lottery_address);
         });
-        it("Different seeds", async function () {
+        it("Different numbers", async function () {
             let randomNumbers = [];
             for (let i = 0; i < 10; i++) {
                 let ranNum = await (
