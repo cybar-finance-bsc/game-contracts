@@ -235,6 +235,15 @@ contract Lottery is Ownable, Initializable, Testable {
         costWithDiscount = cost.sub(discount);
     }
 
+    function getBasicLottoInfo() external view returns(
+        LottoInfo memory
+    )
+    {
+        return(
+          getBasicLottoInfo(lotteryIdCounter_)
+        ); 
+    }
+
     function getBasicLottoInfo(uint256 _lotteryId) external view returns(
         LottoInfo memory
     )
